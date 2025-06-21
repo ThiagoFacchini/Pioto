@@ -1,4 +1,4 @@
-import { MessageCreator } from "../classes/messageCreator"
+import { MessageCreator } from "../classes/messageCreator.js"
 
 export function startTimeSimulator(wss, config = {}) {
   const {

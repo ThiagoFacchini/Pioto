@@ -1,7 +1,7 @@
 import { useTimeStore } from '../stores/timeStore.jsx'
 
 export function routeMessage(msg) {
-  switch (msg.type) {
+  switch (msg.messageType) {
     case 'TICK':
       useTimeStore.getState().updateTick(msg)
       break
@@ -13,6 +13,7 @@ export function routeMessage(msg) {
     //   ...
 
     default:
-      console.warn(`Unhandled message type: ${msg.type}`)
+      console.warn(`Unhandled message type: ${msg.messageType}`)
+      console.warn( msg )
   }
 }

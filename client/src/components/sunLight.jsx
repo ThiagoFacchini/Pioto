@@ -11,7 +11,7 @@ export default function SunLight() {
   return (
     <directionalLight
       ref={lightRef}
-      position={[5, 10, 5]}
+      position={[0, 10, 0]}
       intensity={1}
       castShadow
     />
