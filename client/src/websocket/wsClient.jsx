@@ -5,7 +5,7 @@ let socket = null
 
 export function connectWebSocket() {
   console.log("Calling connectWebSocket")
-  socket = new WebSocket('ws://localhost:8080')
+  socket = new WebSocket('ws://10.0.1.184:8080')
   
   socket.onopen = function() {
     console.log('[WS] Connected')
@@ -42,10 +42,18 @@ function getSocket() {
 }
 
 
-export function sendRequest(request) {
-  if (getSocket()?.readyState === WebSocket.OPEN) {
-    socket.send(JSON.stringify(request))
+export function sendRequest( request ) {
+  if ( getSocket()?.readyState === WebSocket.OPEN ) {
+    socket.send( JSON.stringify( request ) )
   } else {
-    console.warn("[WS] Socket not ready:", request)
+    console.warn( "[WS] Socket not ready:", request )
+  }
+}
+
+export function sendUpdate( message ) {
+  if ( getSocket()?.readyState === WebSocket.OPEN ) {
+    socket.send( JSON.stringify( message ) )
+  } else {
+    console.warn( "[WS] Socket not ready:", message )
   }
 }

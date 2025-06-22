@@ -3,7 +3,7 @@ import { useGLTF, useAnimations, useKeyboardControls } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 
 export default function Character( { forwardedRef, showEyes = true, ...props } ) {
-    const gltf = useGLTF( "./BaseCharacter-v2.glb" )
+    const gltf = useGLTF( "http://10.0.1.184:8081/models/BaseCharacter-v2.glb" )
     const { animations } = gltf
     const { ref, actions } = useAnimations( animations, gltf.scene )
 

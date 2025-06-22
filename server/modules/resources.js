@@ -1,22 +1,42 @@
 import { MessageCreator } from "../classes/messageCreator.js"
 
-export function getResources ( message, socket, socketServer) {
-    const payload = [
+const resources = [
         {
             id: 1,
             type: "rock",
-            variant: "rock 1.glb",
+            meshFile: "rock 1.glb",
             position: [ 3, -0.2, 3 ]
         },
         {
             id: 2,
             type: "rock",
-            variant: "rock 1.glb",
+            meshFile: "rock 1.glb",
             position: [ 6, -0.4, 8 ]
         },
-    ]
+]
 
-    const resourcesMessage = new MessageCreator('RESOURCES_LIST', payload)
 
+export function getResources ( message, socket, socketServer ) {
+    const resourcesMessage = new MessageCreator( 'RESOURCES_LIST', resources )
     socket.send( resourcesMessage.toJSON() )
+}
+
+
+export function updateResources ( message, socket, socketServer ) {
+    resources.forEach( ( resource ) => {
+        if ( resource.id === message.messagePayload.id ) {
+            Object.assign( resource, message.messagePayload )
+            broadcastResourcesUpdate( message, socket, socketServer )
+        }
+    })
+}
+
+
+export function broadcastResourcesUpdate ( message, socket, socketServer ) {
+    const resourcesUpdatedMessage = new MessageCreator( 'RESOURCES_LIST', resources )
+    socketServer.clients.forEach((client) => {
+      if (client.readyState === 1) {
+        client.send( resourcesUpdatedMessage.toJSON() )
+      }
+    })
 }

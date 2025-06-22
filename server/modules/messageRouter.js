@@ -1,7 +1,9 @@
-import { getResources } from "./resources.js"
+import { getResources, updateResources } from "./resources.js"
+
 
 const messageHandler = { 
-    REQUEST_RESOURCES: getResources
+    RESOURCES_REQUEST: getResources,
+    RESOURCES_UPDATE: updateResources
 }
 
 export function routeMessage ( type, message, socket, socketServer ) {

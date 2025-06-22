@@ -2,10 +2,12 @@ import { useRef, useEffect, useMemo } from 'react'
 import { useGLTF, TransformControls } from '@react-three/drei'
 import * as THREE from 'three'
 
+import { sendUpdate } from '../websocket/wsClient'
+
 import { useSelectionStore } from '../stores/selectionStore'
 
 export default function Rock({ id, position = [0, 0, 0] }) {
-    const { scene } = useGLTF('./Rock 1.glb')
+    const { scene } = useGLTF('http://10.0.1.184:8081/models/Rock 1.glb')
     const rock = scene.clone( true )
 
     const meshRef = useRef()
@@ -16,7 +18,7 @@ export default function Rock({ id, position = [0, 0, 0] }) {
     const isSelected = selectedResourceId === id
 
 
-    useEffect(() => {
+    useEffect( () => {
         const handleKeyDown = ( e ) => {
             if (e.key === 'Escape') clearSelection()
         }
@@ -26,7 +28,7 @@ export default function Rock({ id, position = [0, 0, 0] }) {
     }, [ clearSelection ] )
 
 
-    useEffect(() => {
+    useEffect( () => {
         if ( !isSelected || !meshRef.current ) return
 
         const helper = new THREE.BoxHelper(meshRef.current, 0xffff00)
@@ -37,13 +39,35 @@ export default function Rock({ id, position = [0, 0, 0] }) {
             meshRef.current.remove( helper )
         }
     }, [ isSelected ] )
+
+
+    useEffect( () => {
+        const controls = controlsRef.current
+        if ( !controls || !isSelected ) return
+
+        const handleMouseUp = () => {
+            if ( controlsRef.current ) {
+                const newPos = controlsRef.current.object.position.toArray()
+                sendUpdate( { 
+                    messageType: 'RESOURCES_UPDATE',
+                    messagePayload: {
+                        id: id,
+                        position: newPos
+                    }
+                } )
+            }
+        }
+
+        window.addEventListener( 'mouseup', handleMouseUp )
+        return () => window.removeEventListener( 'mouseup', handleMouseUp )
+    } )
     
 
     return (
         isSelected ? (
             <TransformControls ref={ controlsRef } mode="translate" position={ position }>
                 <group
-                    ref={meshRef}
+                    ref={ meshRef }
                     onClick={ ( e ) => {
                         e.stopPropagation()
                         selectResource( id )

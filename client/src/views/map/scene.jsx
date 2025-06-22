@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import { useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { KeyboardControls } from '@react-three/drei'
 
@@ -13,15 +13,13 @@ import Rock from './../../resources/rock'
 export default function Scene() {
   const playerRef = useRef()
 
-  const { resources, areResourcesLoaded } = useResourcesStore.getState( ( state ) => ({ 
-    resources: state.resources,
-    areResourcesLoaded: state.areResourcesLoaded
-  }))
+  const resources = useResourcesStore( ( state ) => state.resources )
+  const areResourcesLoaded = useResourcesStore( ( state ) => state.areResourcesLoaded )
+
 
   function getResources() {
-
     return resources.map( ( res, i ) => {
-      if ( res.type === "rock" && res.variant == "rock 1.glb" ) {
+      if ( res.type === "rock" && res.meshFile == "rock 1.glb" ) {
         return <Rock id={ res.id } position={ res.position } key={ `rock_${i}` }/>
       }
       return null

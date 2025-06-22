@@ -14,7 +14,7 @@ function Map() {
 
     useEffect( () => {
         if ( isConnected && areResourcesLoaded === false ) {
-            sendRequest( { messageType: 'REQUEST_RESOURCES' } )
+            sendRequest( { messageType: 'RESOURCES_REQUEST' } )
         }
     }, [ isConnected, areResourcesLoaded ])
 
