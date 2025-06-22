@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useGLTF, useAnimations, useKeyboardControls } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 
-export default function Character( { forwardedRef, ...props } ) {
+export default function Character( { forwardedRef, showEyes = true, ...props } ) {
     const gltf = useGLTF( "./BaseCharacter-v2.glb" )
     const { animations } = gltf
     const { ref, actions } = useAnimations( animations, gltf.scene )
@@ -11,6 +11,20 @@ export default function Character( { forwardedRef, ...props } ) {
     const characterRef = ref 
 
     const isMovingRef = useRef( false )
+    const eyesRef = useRef()
+
+    // Prints model meshes and components
+    // useEffect(() => {
+    //     gltf.scene.traverse((obj) => {
+    //         console.log(obj.name)
+    //     })
+    // }, [gltf])
+
+    useEffect( () => { 
+        eyesRef.current = gltf.scene.getObjectByName( "Eye_1" )
+        if ( eyesRef.current ) eyesRef.current.visible = showEyes
+    }, [ gltf, showEyes ] )
+
 
     useEffect( () => {
         if ( forwardedRef ) {
@@ -34,6 +48,8 @@ export default function Character( { forwardedRef, ...props } ) {
 
         const len = Math.hypot( dir.x, dir.z )
         const isMoving = len > 0
+
+        characterRef.current.userData.isMoving = isMoving
 
         if ( isMoving !== isMovingRef.current ) {
             isMovingRef.current = isMoving

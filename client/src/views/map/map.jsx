@@ -1,9 +1,24 @@
+import { useEffect } from "react"
+import { sendRequest } from "../../websocket/wsClient"
+
+import { useWebSocketStore } from "../../stores/websocketStore"
 import { useTimeStore } from "../../stores/timeStore"
+import { useResourcesStore } from "../../stores/resourcesStore"
 
 import Scene from "./scene"
 
 function Map() {
     const time = useTimeStore( ( state ) => state.simTime )
+    const areResourcesLoaded = useResourcesStore( ( state ) => state.areResourcesLoaded )
+    const isConnected = useWebSocketStore( ( state ) => state.isConnected )
+
+    useEffect( () => {
+        if ( isConnected && areResourcesLoaded === false ) {
+            sendRequest( { messageType: 'REQUEST_RESOURCES' } )
+        }
+    }, [ isConnected, areResourcesLoaded ])
+
+    
 
     return (
         <>
