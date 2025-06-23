@@ -55,7 +55,7 @@ export default function Collider( props: PropsType ) {
             visible={ true }
         >
             { geometry && <primitive object={ geometry } attach="geometry" /> }
-            <meshBasicMaterial color="red" wireframe transparent opacity={ 0.4 } />
+            <meshBasicMaterial color="red" wireframe transparent opacity={ 1 } />
         </mesh>
     )
 }

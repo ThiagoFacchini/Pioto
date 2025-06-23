@@ -5,7 +5,7 @@ let socket: WebSocket | null = null
 
 export function connectWebSocket() {
   console.log("Calling connectWebSocket")
-  socket = new WebSocket('ws://10.0.1.184:8080')
+  socket = new WebSocket('ws://localhost:8080')
   
   socket.onopen = function() {
     console.log('[WS] Connected')

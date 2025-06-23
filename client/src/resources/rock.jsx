@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react'
 import { useGLTF, TransformControls } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
 import { sendUpdate } from '../websocket/WsClient'
@@ -18,7 +19,7 @@ export default function Rock({ id, position = [0, 0, 0], size = [ 1, 1, 1 ], col
 
     const meshRef = useRef()
     const controlsRef = useRef()
-    // const helperRef = useRef()
+    const colliderRef = useRef()
 
     const { selectedResourceId, selectResource, clearSelection } = useSelectionStore()
     const isSelected = selectedResourceId === id
@@ -31,20 +32,6 @@ export default function Rock({ id, position = [0, 0, 0], size = [ 1, 1, 1 ], col
         window.addEventListener( 'keydown', handleKeyDown )
         return () => window.removeEventListener( 'keydown', handleKeyDown )
     }, [ clearSelection ] )
-
-
-    // Displays a box when selected
-    // useEffect( () => {
-    //     if ( !isSelected || !meshRef.current ) return
-
-    //     const helper = new THREE.BoxHelper(meshRef.current, 0xffff00)
-    //     helperRef.current = helper
-    //     meshRef.current.add( helper )
-
-    //     return () => {
-    //         meshRef.current.remove( helper )
-    //     }
-    // }, [ isSelected ] )
 
 
     useEffect( () => {
@@ -67,7 +54,15 @@ export default function Rock({ id, position = [0, 0, 0], size = [ 1, 1, 1 ], col
         window.addEventListener( 'mouseup', handleMouseUp )
         return () => window.removeEventListener( 'mouseup', handleMouseUp )
     } )
-    
+   
+
+    useFrame( () => { 
+        if (colliderRef.current && meshRef.current) {
+            colliderRef.current.position.copy(meshRef.current.position)
+        }
+    } )
+
+
     return (
         isSelected ? (
             <TransformControls ref={ controlsRef } mode="translate" position={ position }>
@@ -79,7 +74,7 @@ export default function Rock({ id, position = [0, 0, 0], size = [ 1, 1, 1 ], col
                     } }
                 >
                     <primitive object={ rock } castShadow receiveShadow />
-                    <Collider type="CUBE" size={ size } position={ position } />
+                    <Collider ref={ colliderRef } type="CUBE" size={ size } position={ position } />
                 </group>
             </TransformControls>
         ) : (
