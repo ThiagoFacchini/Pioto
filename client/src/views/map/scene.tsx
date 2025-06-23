@@ -7,7 +7,7 @@ import { Resource } from './../../../../shared/resourcesType'
 
 import SunLight from '../../components/sunLight'
 import Camera from '../../components/camera'
-import Character from '../../components/character'
+import Character from '../../components/Character'
 
 import { useResourcesStore } from '../../stores/resourcesStore'
 
@@ -18,6 +18,16 @@ import Rock from '../../resources/rock'
 //  Layers
 export const LAYER_COLLISION = new THREE.Group()
 LAYER_COLLISION.name = "LAYER_COLLISIOIN"
+
+
+// Keyboard Controls Configuration
+export const CONTROLS = [
+  { name: 'forward', keys: [ 'w' ] },
+  { name: 'backward', keys: [ 's' ] },
+  { name: 'left', keys: [ 'a' ] },
+  { name: 'right', keys: [ 'd' ] },
+  { name: 'jump', keys: [ 'space' ] }
+]
 
 
 export default function Scene() {
@@ -32,6 +42,7 @@ export default function Scene() {
         return <Rock 
           id={ res.id } 
           position={ res.position } 
+          size={ res.size }
           collidable={ res.collidable }
           key={ `rock_${i}` }
         />
@@ -41,15 +52,7 @@ export default function Scene() {
   }
 
   return (
-    <KeyboardControls
-      map={[
-        { name: 'forward', keys: [ 'w' ] },
-        { name: 'backward', keys: [ 's' ] },
-        { name: 'left', keys: [ 'a' ] },
-        { name: 'right', keys: [ 'd' ] },
-        { name: 'jump', keys: [ 'space' ] }
-      ]}
-    >
+    <KeyboardControls map={ CONTROLS } >
         <Canvas>
           {/* Layers */}
           <primitive object={ LAYER_COLLISION } />

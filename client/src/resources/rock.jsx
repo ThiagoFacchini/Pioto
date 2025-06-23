@@ -2,7 +2,7 @@ import { useRef, useEffect, useMemo } from 'react'
 import { useGLTF, TransformControls } from '@react-three/drei'
 import * as THREE from 'three'
 
-import { sendUpdate } from '../websocket/wsClient'
+import { sendUpdate } from '../websocket/WsClient'
 
 import { useSelectionStore } from '../stores/selectionStore'
 
@@ -14,6 +14,7 @@ export default function Rock({ id, position = [0, 0, 0], size = [ 1, 1, 1 ], col
     const rock = scene.clone( true )
 
     rock.userData.collidable = collidable
+    console.log('rock userdata -> ' , rock.userData.collidable)
 
     const meshRef = useRef()
     const controlsRef = useRef()
@@ -21,7 +22,6 @@ export default function Rock({ id, position = [0, 0, 0], size = [ 1, 1, 1 ], col
 
     const { selectedResourceId, selectResource, clearSelection } = useSelectionStore()
     const isSelected = selectedResourceId === id
-
 
     useEffect( () => {
         const handleKeyDown = ( e ) => {

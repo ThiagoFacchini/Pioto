@@ -8,7 +8,7 @@ const resources: Array<Resource> = [
             type: "rock",
             meshFile: "rock 1.glb",
             position: [ 3, -0.2, 3 ],
-            size: [ 0.9, 0.9, 1 ],
+            size: [ 0.8, 0.9, 0.8 ],
             collidable: true
         },
         {

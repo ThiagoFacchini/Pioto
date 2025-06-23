@@ -1,22 +1,33 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, RefObject } from 'react'
 import { useGLTF, useAnimations, useKeyboardControls } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
 import { LAYER_COLLISION } from '../views/map/scene'
 
-export default function Character( { forwardedRef, showEyes = true, ...props } ) {
+type PropsType = {
+    forwardedRef: RefObject<THREE.Object3D | null>,
+    showEyes: boolean,
+    scale: [ number, number, number ],
+    position: [ number, number, number]
+}
+
+type ControlKey = 'forward' | 'backward' | 'left' | 'right' | 'jump'
+type ControlKeys = Record<ControlKey, boolean>
+
+export default function Character( props: PropsType ) {
     const gltf = useGLTF( "http://10.0.1.184:8081/models/BaseCharacter-v2.glb" )
     const { animations } = gltf
     const { ref, actions } = useAnimations( animations, gltf.scene )
 
     const keys = useKeyboardControls( ( state ) => state )
+    console.log(keys)
     const characterRef = ref 
 
     const isMovingRef = useRef( false )
-    const eyesRef = useRef()
+    const eyesRef = useRef<THREE.Object3D>( null)
     const collisionBoxRef = useRef( new THREE.Box3() )
-    const boxHelperRef = useRef()
+    const boxHelperRef = useRef<THREE.Box3Helper>( null )
 
     // Prints model meshes and components
     // useEffect(() => {
@@ -27,15 +38,15 @@ export default function Character( { forwardedRef, showEyes = true, ...props } )
 
     useEffect( () => { 
         eyesRef.current = gltf.scene.getObjectByName( "Eye_1" )
-        if ( eyesRef.current ) eyesRef.current.visible = showEyes
-    }, [ gltf, showEyes ] )
+        if ( eyesRef.current ) eyesRef.current.visible = props.showEyes
+    }, [ gltf, props.showEyes ] )
 
 
     useEffect( () => {
-        if ( forwardedRef ) {
-            forwardedRef.current = characterRef.current
+        if ( props.forwardedRef && characterRef.current ) {
+            props.forwardedRef!.current = characterRef.current
         }
-    }, [ characterRef, forwardedRef ] )
+    }, [ characterRef, props.forwardedRef ] )
 
 
     useEffect(() => {
@@ -99,7 +110,12 @@ export default function Character( { forwardedRef, showEyes = true, ...props } )
             let collided = false
 
             LAYER_COLLISION.traverse( ( obj ) => {
-                if ( obj.userData.collidable && obj !== characterRef.current && obj.geometry?.boundingBox ) {
+                // if (obj.userData.collidable === true) {
+                //     console.log("Object collidable => ", obj.userData.collidable)
+                // } else {
+                //     console.log("Not collidable")
+                // }
+                if ( obj.userData.collidable === true && obj !== characterRef.current && obj.geometry?.boundingBox ) {
                     const objBox = obj.geometry.boundingBox.clone()
                     objBox.applyMatrix4( obj.matrixWorld )
                     

@@ -2,7 +2,7 @@ export type Resource = {
     id: number,
     type: string,
     meshFile: string,
-    position: Array<number>,
-    size: Array<number>,
+    position: [ number, number, number ],
+    size: [ number, number, number ],
     collidable: boolean
 }
