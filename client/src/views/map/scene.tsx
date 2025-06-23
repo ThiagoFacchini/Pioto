@@ -5,8 +5,8 @@ import * as THREE from 'three'
 
 import { Resource } from './../../../../shared/resourcesType'
 
-import SunLight from '../../components/sunLight'
-import Camera from '../../components/camera'
+import SunLight from '../../components/SunLight'
+import Camera from '../../components/Camera'
 import Character from '../../components/Character'
 
 import { useResourcesStore } from '../../stores/resourcesStore'

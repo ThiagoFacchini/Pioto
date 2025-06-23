@@ -1,9 +1,14 @@
 import { PerspectiveCamera } from "@react-three/drei";
 import { useFrame } from '@react-three/fiber'
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect, RefObject } from 'react'
+import * as THREE from 'three'
 
-export default function Camera( { targetRef }) {
-    const camRef = useRef()
+type PropsType = {
+    targetRef: RefObject<THREE.Object3D | null>
+}
+
+export default function Camera( { targetRef } : PropsType ) {
+    const camRef = useRef<THREE.PerspectiveCamera>( null )
 
     const [ distance, setDistance ] = useState( 10 )
     const [ theta, setTheta ] = useState( 0 )
@@ -13,7 +18,7 @@ export default function Camera( { targetRef }) {
     const maxDistance = 15
 
     useEffect( () => {
-        const handleWheel = ( e ) => {
+        const handleWheel = ( e: WheelEvent ) => {
             setDistance( (prev) =>
                 Math.min( maxDistance, Math.max( minDistance, prev + e.deltaY * 0.01 ) )
             )
@@ -22,14 +27,14 @@ export default function Camera( { targetRef }) {
         let dragging = false
         let lastX = 0
 
-        const onMouseDown = ( e ) => {
+        const onMouseDown = ( e: MouseEvent ) => {
             if ( e.button === 2 ) {
                 dragging = true
                 lastX = e.clientX
             }
         }
 
-        const onMouseMove = ( e ) => {
+        const onMouseMove = ( e: MouseEvent ) => {
             if ( !dragging ) return
             const deltaX = e.clientX - lastX
             lastX = e.clientX

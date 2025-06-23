@@ -8,20 +8,23 @@ import { LAYER_COLLISION } from '../views/map/scene'
 type PropsType = {
     forwardedRef: RefObject<THREE.Object3D | null>,
     showEyes: boolean,
-    scale: [ number, number, number ],
+    scale: number,
     position: [ number, number, number]
 }
 
-type ControlKey = 'forward' | 'backward' | 'left' | 'right' | 'jump'
-type ControlKeys = Record<ControlKey, boolean>
+type ControlKeys = 'forward' | 'backward' | 'left' | 'right' | 'jump'
+
 
 export default function Character( props: PropsType ) {
     const gltf = useGLTF( "http://10.0.1.184:8081/models/BaseCharacter-v2.glb" )
     const { animations } = gltf
     const { ref, actions } = useAnimations( animations, gltf.scene )
 
-    const keys = useKeyboardControls( ( state ) => state )
-    console.log(keys)
+    const forward = useKeyboardControls< ControlKeys >( ( state ) => state.forward )
+    const backward = useKeyboardControls< ControlKeys >( ( state ) => state.backward )
+    const left = useKeyboardControls< ControlKeys >( ( state ) => state.left )
+    const right = useKeyboardControls< ControlKeys >( ( state ) => state.right )
+
     const characterRef = ref 
 
     const isMovingRef = useRef( false )
@@ -29,15 +32,9 @@ export default function Character( props: PropsType ) {
     const collisionBoxRef = useRef( new THREE.Box3() )
     const boxHelperRef = useRef<THREE.Box3Helper>( null )
 
-    // Prints model meshes and components
-    // useEffect(() => {
-    //     gltf.scene.traverse((obj) => {
-    //         console.log(obj.name)
-    //     })
-    // }, [gltf])
-
     useEffect( () => { 
-        eyesRef.current = gltf.scene.getObjectByName( "Eye_1" )
+        const eyesMesh = gltf.scene.getObjectByName( "Eye_1" )
+        if ( eyesMesh ) eyesRef.current =  eyesMesh
         if ( eyesRef.current ) eyesRef.current.visible = props.showEyes
     }, [ gltf, props.showEyes ] )
 
@@ -55,26 +52,30 @@ export default function Character( props: PropsType ) {
 
 
     // Helper
-    useEffect(() => {
+    useEffect( () => {
         const helper = new THREE.Box3Helper(collisionBoxRef.current, 0xffff00)
         boxHelperRef.current = helper
-        characterRef.current.parent.add(helper)
+        
+        if ( characterRef.current?.parent ) characterRef.current.parent.add(helper)
 
-        return () => characterRef.current.parent.remove(helper)
+        return () => {
+            if ( characterRef.current?.parent ) characterRef.current.parent.add(helper)
+        }
     }, [])
 
+    
     useFrame( ( _, delta ) => {
         const dir = { x: 0, z: 0 }
 
-        if ( keys.forward ) dir.z -= 1
-        if ( keys.backward ) dir.z += 1
-        if ( keys.left ) dir.x -= 1
-        if ( keys.right ) dir.x += 1
+        if ( forward ) dir.z -= 1
+        if ( backward ) dir.z += 1
+        if ( left ) dir.x -= 1
+        if ( right ) dir.x += 1
 
         const len = Math.hypot( dir.x, dir.z )
         const isMoving = len > 0
 
-        characterRef.current.userData.isMoving = isMoving
+        if ( characterRef.current ) characterRef.current.userData.isMoving = isMoving
 
         if ( isMoving !== isMovingRef.current ) {
             isMovingRef.current = isMoving
@@ -95,27 +96,30 @@ export default function Character( props: PropsType ) {
 
             const speed = 3
 
-            characterRef.current.updateMatrixWorld( true )
+            if ( characterRef.current ) characterRef.current.updateMatrixWorld( true )
             const moveVec = new THREE.Vector3( dir.x * speed * delta, 0, dir.z * speed * delta )
             
             const width = 0.8
             const depth = 0.8
             const height = 1.7
 
+            if (!characterRef.current) return
+
             const center = characterRef.current.position.clone().add( new THREE.Vector3( 0, height / 2, 0 ) ).add( moveVec )
             const collisionBox = new THREE.Box3().setFromCenterAndSize(center, new THREE.Vector3(width, height, depth))
+            
             collisionBoxRef.current.copy( collisionBox )
             boxHelperRef.current?.updateMatrixWorld( true )
 
             let collided = false
 
             LAYER_COLLISION.traverse( ( obj ) => {
-                // if (obj.userData.collidable === true) {
-                //     console.log("Object collidable => ", obj.userData.collidable)
-                // } else {
-                //     console.log("Not collidable")
-                // }
-                if ( obj.userData.collidable === true && obj !== characterRef.current && obj.geometry?.boundingBox ) {
+                if ( 
+                    obj instanceof THREE.Mesh && 
+                    obj.userData.collidable === true && 
+                    obj !== characterRef.current && 
+                    obj.geometry?.boundingBox 
+                ) {
                     const objBox = obj.geometry.boundingBox.clone()
                     objBox.applyMatrix4( obj.matrixWorld )
                     

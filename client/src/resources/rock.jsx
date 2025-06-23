@@ -1,4 +1,4 @@
-import { useRef, useEffect, useMemo } from 'react'
+import { useRef, useEffect } from 'react'
 import { useGLTF, TransformControls } from '@react-three/drei'
 import * as THREE from 'three'
 
@@ -7,7 +7,7 @@ import { sendUpdate } from '../websocket/WsClient'
 import { useSelectionStore } from '../stores/selectionStore'
 
 
-import Collider from './../components/collider'
+import Collider from './../components/Collider'
 
 export default function Rock({ id, position = [0, 0, 0], size = [ 1, 1, 1 ], collidable } ) {
     const { scene } = useGLTF('http://10.0.1.184:8081/models/Rock 1.glb')
