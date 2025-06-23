@@ -4,8 +4,8 @@ import http from 'http'
 import path from 'path'
 
 import { WebSocketServer } from 'ws'
-import { startTimeSimulator } from './modules/timeSimulator.js'
-import { routeMessage } from './modules/messageRouter.js'
+import { startTimeSimulator } from './modules/TimeSimulator.js'
+import { routeMessage } from './modules/MessageRouter.js'
 import { fileURLToPath } from 'url'
 
 // Resolve __dirname for ES modules
@@ -15,7 +15,7 @@ const __dirname = path.dirname( __filename )
 const app = express()
 app.use( cors() )
 
-app.use('/models', express.static( path.join( __dirname, 'public', 'models' ) ) )
+app.use('/models', express.static( path.join( __dirname, '..', 'public', 'models' ) ) )
 
 const server = http.createServer( app )
 const HTTP_PORT = 8081

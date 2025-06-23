@@ -1,10 +1,23 @@
-import { MessageCreator } from "../classes/messageCreator.js"
+import { WebSocketServer } from "ws"
 
-export function startTimeSimulator(wss, config = {}) {
-  const {
-    simulatedDayLengthMs = 60 * 60 * 1000,
-    simulatedMinutesPerDay = 24 * 60,
-  } = config
+import { TickPayload } from '../../../shared/messageTypes.ts'
+
+import { MessageCreator } from "../classes/MessageCreator.js"
+
+type TimeSimulatorConfigType = {
+  simulatedDayLengthMs: number,
+  simulatedMinutesPerDay: number
+
+}
+
+const defaultConfig: TimeSimulatorConfigType = {
+  simulatedDayLengthMs: 60 * 60 * 1000,
+  simulatedMinutesPerDay: 24 * 60,
+}
+
+
+export function startTimeSimulator( wss: WebSocketServer, config: Partial<TimeSimulatorConfigType> = {} ): void {
+  const { simulatedDayLengthMs, simulatedMinutesPerDay } = { ...defaultConfig, ...config }
 
   const tickInterval = simulatedDayLengthMs / simulatedMinutesPerDay
   let currentSimMinute = 0
@@ -25,7 +38,7 @@ export function startTimeSimulator(wss, config = {}) {
       timestamp: Date.now(),
     }
 
-    const tickMessage = new MessageCreator('TICK', payload)
+    const tickMessage = new MessageCreator<'TICK'>('TICK', payload)
 
     wss.clients.forEach((client) => {
       if (client.readyState === 1) {

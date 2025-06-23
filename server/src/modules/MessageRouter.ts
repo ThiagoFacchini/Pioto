@@ -1,5 +1,4 @@
-import { getResources, updateResources } from "./resources.js"
-
+import { getResources, updateResources } from "./Resources.js"
 
 const messageHandler = { 
     RESOURCES_REQUEST: getResources,

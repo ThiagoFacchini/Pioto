@@ -1,7 +1,7 @@
 import { useEffect } from "react"
-import { sendRequest } from "../../websocket/wsClient"
+import { sendRequest } from "../../websocket/WsClient"
 
-import { useWebSocketStore } from "../../stores/websocketStore"
+import { useWebSocketStore } from "../../stores/WebsocketStore"
 import { useTimeStore } from "../../stores/timeStore"
 import { useResourcesStore } from "../../stores/resourcesStore"
 

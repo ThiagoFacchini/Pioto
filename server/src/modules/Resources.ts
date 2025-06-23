@@ -1,6 +1,8 @@
-import { MessageCreator } from "../classes/messageCreator.js"
+import { MessageCreator } from "../classes/MessageCreator.js"
 
-const resources = [
+import { Resource } from '../../../shared/resourcesType.js'
+
+const resources: Array<Resource> = [
         {
             id: 1,
             type: "rock",

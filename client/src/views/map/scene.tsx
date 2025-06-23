@@ -3,13 +3,16 @@ import { Canvas } from '@react-three/fiber'
 import { KeyboardControls } from '@react-three/drei'
 import * as THREE from 'three'
 
+import { Resource } from './../../../../shared/resourcesType'
+
 import SunLight from '../../components/sunLight'
 import Camera from '../../components/camera'
 import Character from '../../components/character'
 
 import { useResourcesStore } from '../../stores/resourcesStore'
 
-import Rock from './../../resources/rock'
+import Rock from '../../resources/rock'
+
 
 
 //  Layers
@@ -18,13 +21,13 @@ LAYER_COLLISION.name = "LAYER_COLLISIOIN"
 
 
 export default function Scene() {
-  const playerRef = useRef()
+  const playerRef = useRef<THREE.Object3D>(null)
 
   const resources = useResourcesStore( ( state ) => state.resources )
   const areResourcesLoaded = useResourcesStore( ( state ) => state.areResourcesLoaded )
 
    function getResources() {
-    return resources.map( ( res, i ) => {
+    return resources.map( ( res: Resource, i: number ) => {
       if ( res.type === "rock" && res.meshFile == "rock 1.glb" ) {
         return <Rock 
           id={ res.id } 

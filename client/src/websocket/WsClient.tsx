@@ -1,7 +1,7 @@
-import { routeMessage } from './messageRouter.jsx'
-import { useWebSocketStore } from '../stores/websocketStore.jsx'
+import { routeMessage } from './MessageRouter'
+import { useWebSocketStore } from '../stores/WebsocketStore'
 
-let socket = null
+let socket: WebSocket | null = null
 
 export function connectWebSocket() {
   console.log("Calling connectWebSocket")
@@ -42,17 +42,21 @@ function getSocket() {
 }
 
 
-export function sendRequest( request ) {
-  if ( getSocket()?.readyState === WebSocket.OPEN ) {
-    socket.send( JSON.stringify( request ) )
+export function sendRequest( request: string ) {
+  const ws = getSocket()
+
+  if ( ws instanceof WebSocket && ws?.readyState === WebSocket.OPEN ) {
+    ws.send( JSON.stringify( request ) )
   } else {
     console.warn( "[WS] Socket not ready:", request )
   }
 }
 
-export function sendUpdate( message ) {
-  if ( getSocket()?.readyState === WebSocket.OPEN ) {
-    socket.send( JSON.stringify( message ) )
+export function sendUpdate( message: string ) {
+  const ws = getSocket()
+
+  if ( ws instanceof WebSocket && ws?.readyState === WebSocket.OPEN ) {
+    ws.send( JSON.stringify( message ) )
   } else {
     console.warn( "[WS] Socket not ready:", message )
   }
