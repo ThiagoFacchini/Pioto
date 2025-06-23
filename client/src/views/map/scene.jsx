@@ -1,6 +1,7 @@
-import { useRef } from 'react'
+import { useRef, useEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { KeyboardControls } from '@react-three/drei'
+import * as THREE from 'three'
 
 import SunLight from '../../components/sunLight'
 import Camera from '../../components/camera'
@@ -10,17 +11,27 @@ import { useResourcesStore } from '../../stores/resourcesStore'
 
 import Rock from './../../resources/rock'
 
+
+//  Layers
+export const LAYER_COLLISION = new THREE.Group()
+LAYER_COLLISION.name = "LAYER_COLLISIOIN"
+
+
 export default function Scene() {
   const playerRef = useRef()
 
   const resources = useResourcesStore( ( state ) => state.resources )
   const areResourcesLoaded = useResourcesStore( ( state ) => state.areResourcesLoaded )
 
-
-  function getResources() {
+   function getResources() {
     return resources.map( ( res, i ) => {
       if ( res.type === "rock" && res.meshFile == "rock 1.glb" ) {
-        return <Rock id={ res.id } position={ res.position } key={ `rock_${i}` }/>
+        return <Rock 
+          id={ res.id } 
+          position={ res.position } 
+          collidable={ res.collidable }
+          key={ `rock_${i}` }
+        />
       }
       return null
     })
@@ -37,6 +48,9 @@ export default function Scene() {
       ]}
     >
         <Canvas>
+          {/* Layers */}
+          <primitive object={ LAYER_COLLISION } />
+          {/* End of Layer */}
           <ambientLight intensity={0.5} />
           <SunLight />
 

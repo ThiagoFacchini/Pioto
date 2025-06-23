@@ -5,13 +5,17 @@ const resources = [
             id: 1,
             type: "rock",
             meshFile: "rock 1.glb",
-            position: [ 3, -0.2, 3 ]
+            position: [ 3, -0.2, 3 ],
+            size: [ 0.9, 0.9, 1 ],
+            collidable: true
         },
         {
             id: 2,
             type: "rock",
             meshFile: "rock 1.glb",
-            position: [ 6, -0.4, 8 ]
+            position: [ 6, -0.4, 8 ],
+            size: [ 0.9, 0.9, 1 ],
+            collidable: false
         },
 ]
 
