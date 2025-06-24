@@ -3,7 +3,7 @@ import { Canvas } from '@react-three/fiber'
 import { KeyboardControls } from '@react-three/drei'
 import * as THREE from 'three'
 
-import { Resource } from './../../../../shared/resourcesType'
+import { Resource } from '../../../../shared/resourcesType'
 
 import SunLight from '../../components/SunLight'
 import Camera from '../../components/Camera'
@@ -11,7 +11,7 @@ import Character from '../../components/Character'
 
 import { useResourcesStore } from '../../stores/resourcesStore'
 
-import Rock from '../../resources/rock'
+import Rock from '../../resources/Rock'
 
 
 
@@ -39,13 +39,7 @@ export default function Scene() {
    function getResources() {
     return resources.map( ( res: Resource, i: number ) => {
       if ( res.type === "rock" && res.meshFile == "rock 1.glb" ) {
-        return <Rock 
-          id={ res.id } 
-          position={ res.position } 
-          size={ res.size }
-          collidable={ res.collidable }
-          key={ `rock_${i}` }
-        />
+        return <Rock resource={ res } key={ res.id } />
       }
       return null
     })

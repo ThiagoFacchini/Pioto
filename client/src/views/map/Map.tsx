@@ -5,7 +5,7 @@ import { useWebSocketStore } from "../../stores/WebsocketStore"
 import { useTimeStore } from "../../stores/timeStore"
 import { useResourcesStore } from "../../stores/resourcesStore"
 
-import Scene from "./scene"
+import Scene from "./Scene"
 
 function Map() {
     const time = useTimeStore( ( state ) => state.simTime )

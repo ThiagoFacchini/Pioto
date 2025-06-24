@@ -1,31 +1,34 @@
 import { useRef, useEffect } from 'react'
 import { useGLTF, TransformControls } from '@react-three/drei'
-import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+
+// @ts-ignore
+import { TransformControls as ThreeTransformControls } from 'three/examples/jsm/controls/TransformControls'
 
 import { sendUpdate } from '../websocket/WsClient'
 
 import { useSelectionStore } from '../stores/selectionStore'
 
+import Collider from '../components/Collider'
 
-import Collider from './../components/Collider'
+import { Resource } from './../../../shared/resourcesType'
 
-export default function Rock({ id, position = [0, 0, 0], size = [ 1, 1, 1 ], collidable } ) {
+type PropsType = {
+    resource: Resource
+}
+
+export default function Rock( props: PropsType ) {
     const { scene } = useGLTF('http://10.0.1.184:8081/models/Rock 1.glb')
     const rock = scene.clone( true )
 
-    rock.userData.collidable = collidable
-    console.log('rock userdata -> ' , rock.userData.collidable)
-
-    const meshRef = useRef()
-    const controlsRef = useRef()
-    const colliderRef = useRef()
+    const meshRef = useRef< THREE.Group >( null )
+    const controlsRef = useRef<ThreeTransformControls<Camera> | null>( null )
 
     const { selectedResourceId, selectResource, clearSelection } = useSelectionStore()
-    const isSelected = selectedResourceId === id
+    const isSelected = selectedResourceId === props.resource.id
 
     useEffect( () => {
-        const handleKeyDown = ( e ) => {
+        const handleKeyDown = ( e: KeyboardEvent ) => {
             if (e.key === 'Escape') clearSelection()
         }
 
@@ -40,13 +43,13 @@ export default function Rock({ id, position = [0, 0, 0], size = [ 1, 1, 1 ], col
 
         const handleMouseUp = () => {
             if ( controlsRef.current ) {
-                const newPos = controlsRef.current.object.position.toArray()
+                const newPos = controlsRef.current?.object?.position.toArray()
+
+                if ( !newPos ) return
+
                 sendUpdate( { 
                     messageType: 'RESOURCES_UPDATE',
-                    messagePayload: {
-                        id: id,
-                        position: newPos
-                    }
+                    messagePayload: { ...props.resource, position: newPos }
                 } )
             }
         }
@@ -56,38 +59,30 @@ export default function Rock({ id, position = [0, 0, 0], size = [ 1, 1, 1 ], col
     } )
    
 
-    useFrame( () => { 
-        if (colliderRef.current && meshRef.current) {
-            colliderRef.current.position.copy(meshRef.current.position)
-        }
-    } )
-
-
     return (
         isSelected ? (
-            <TransformControls ref={ controlsRef } mode="translate" position={ position }>
+            <TransformControls ref={ controlsRef } mode="translate" position={ props.resource.position }>
                 <group
                     ref={ meshRef }
                     onClick={ ( e ) => {
                         e.stopPropagation()
-                        selectResource( id )
+                        selectResource( props.resource.id )
                     } }
                 >
                     <primitive object={ rock } castShadow receiveShadow />
-                    <Collider ref={ colliderRef } type="CUBE" size={ size } position={ position } />
                 </group>
             </TransformControls>
         ) : (
             <group
                 ref={ meshRef }
-                position={ position }
+                position={ props.resource.position }
                 onClick={ ( e ) => {
                 e.stopPropagation()
-                    selectResource( id )
+                    selectResource( props.resource.id )
                 } }
             >
                 <primitive object={ rock } castShadow receiveShadow />
-                 <Collider type="CUBE" size={ size } position={ position } />
+                 <Collider type="CUBE" size={ props.resource.size } position={ props.resource.position } isCollidable={ props.resource.collidable } />
             </group>
         )
     )

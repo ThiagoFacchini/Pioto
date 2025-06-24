@@ -3,7 +3,7 @@ import { useGLTF, useAnimations, useKeyboardControls } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
-import { LAYER_COLLISION } from '../views/map/scene'
+import { LAYER_COLLISION } from '../views/map/Scene'
 
 type PropsType = {
     forwardedRef: RefObject<THREE.Object3D | null>,

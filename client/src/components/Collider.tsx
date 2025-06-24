@@ -1,11 +1,12 @@
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
-import { LAYER_COLLISION } from '../views/map/scene'
+import { LAYER_COLLISION } from '../views/map/Scene'
 
 type PropsType = {
     type: 'CUBE' | 'CYLINDER' | 'SPHERE',
     size: [ number, number, number ],
-    position: [ number, number, number ]
+    position: [ number, number, number ],
+    isCollidable: boolean
 }
 
 export default function Collider( props: PropsType ) {
@@ -51,7 +52,7 @@ export default function Collider( props: PropsType ) {
         <mesh
             ref={ ref }
             position={ new THREE.Vector3( ...adjustedPosition ) }
-            userData={ { collidable: true } }
+            userData={ { collidable: props.isCollidable } }
             visible={ true }
         >
             { geometry && <primitive object={ geometry } attach="geometry" /> }

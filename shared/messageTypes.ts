@@ -7,6 +7,7 @@ export type TickPayload = {
 }
 
 
+
 export interface TypedMessage<T = unknown> {
     messageType: MessageType,
     messagePayload: T
@@ -14,7 +15,8 @@ export interface TypedMessage<T = unknown> {
 
 export interface MessagePayloads {
     TICK: TickPayload,
-    RESOURCES_LIST: Array<Resource>
+    RESOURCES_LIST: Array<Resource>,
+    RESOURCES_UPDATE: Resource
 }
 
 export type MessageType = keyof MessagePayloads

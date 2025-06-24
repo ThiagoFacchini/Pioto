@@ -1,6 +1,8 @@
 import { routeMessage } from './MessageRouter'
 import { useWebSocketStore } from '../stores/WebsocketStore'
 
+import { MessageType, TypedMessage, MessagePayloads } from './../../../shared/messageTypes'
+
 let socket: WebSocket | null = null
 
 export function connectWebSocket() {
@@ -52,7 +54,7 @@ export function sendRequest( request: string ) {
   }
 }
 
-export function sendUpdate( message: string ) {
+export function sendUpdate<T extends MessageType> ( message: TypedMessage<MessagePayloads[T]> ) {
   const ws = getSocket()
 
   if ( ws instanceof WebSocket && ws?.readyState === WebSocket.OPEN ) {
