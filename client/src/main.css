@@ -1,5 +1,5 @@
 :root {
-  --color-primary: #4f46e5;
+  --color-primary: #333;
 
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -21,4 +21,5 @@ body {
   place-items: center;
   min-width: 100vw;
   min-height: 100vh;
+  overflow: hidden;
 }

@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { Resource } from './../../../shared/resourcesType'
+import { Resource } from '../../../shared/resourceType'
 
 type ResourcesStoreType = {
   resources: Array< Resource >,

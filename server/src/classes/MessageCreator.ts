@@ -1,4 +1,4 @@
-import { MessagePayloads, MessageType } from '../../../shared/messageTypes'
+import { MessagePayloads, MessageType } from '../../../shared/messageTypes.ts'
 
 export class MessageCreator<T extends MessageType> {
   messageType: T

@@ -1,6 +1,10 @@
-import { MessageCreator } from "../classes/MessageCreator.js"
+import { WebSocket, WebSocketServer } from "ws";
+import { MessageCreator } from "../classes/MessageCreator.ts"
 
-import { Resource } from '../../../shared/resourcesType.js'
+import type { Resource } from '../../../shared/resourceType.ts'
+import type { MessagePayloads, TypedMessage } from './../../../shared/messageTypes.ts'
+
+
 
 const resources: Array<Resource> = [
         {
@@ -8,7 +12,7 @@ const resources: Array<Resource> = [
             type: "rock",
             meshFile: "rock 1.glb",
             position: [ 3, -0.2, 3 ],
-            size: [ 0.91, 0.98, 0.86 ],
+            size: [ 0.86, 0.98, 0.91 ],
             collidable: true
         },
         {
@@ -22,13 +26,21 @@ const resources: Array<Resource> = [
 ]
 
 
-export function getResources ( message, socket, socketServer ) {
+export function getResources ( 
+    _: null, 
+    client: WebSocket, 
+    socketServer: WebSocketServer 
+) {
     const resourcesMessage = new MessageCreator( 'RESOURCES_LIST', resources )
-    socket.send( resourcesMessage.toJSON() )
+    client.send( resourcesMessage.toJSON() )
 }
 
 
-export function updateResources ( message, socket, socketServer ) {
+export function updateResources ( 
+    payload: TypedMessage<MessagePayloads['RESOURCES_UPDATE']>, 
+    socket: WebSocket, 
+    socketServer: WebSocketServer 
+) {
     resources.forEach( ( resource ) => {
         if ( resource.id === message.messagePayload.id ) {
             Object.assign( resource, message.messagePayload )
@@ -38,7 +50,11 @@ export function updateResources ( message, socket, socketServer ) {
 }
 
 
-export function broadcastResourcesUpdate ( message, socket, socketServer ) {
+export function broadcastResourcesUpdate ( 
+    message: TypedMessage<MessagePayloads['RESOURCES_UPDATE']>, 
+    socket: WebSocket, 
+    socketServer: WebSocketServer 
+) {
     const resourcesUpdatedMessage = new MessageCreator( 'RESOURCES_LIST', resources )
     socketServer.clients.forEach((client) => {
       if (client.readyState === 1) {

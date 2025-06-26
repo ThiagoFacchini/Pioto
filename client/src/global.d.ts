@@ -33,3 +33,8 @@ declare module 'three/examples/jsm/controls/TransformControls' {
 declare global {
   type Camera = THREE.Camera
 }
+
+declare module '*.module.css' {
+  const classes: { [key: string]: string }
+  export default classes
+}

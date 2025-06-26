@@ -1,19 +1,19 @@
-import { useTimeStore } from '../stores/timeStore.jsx'
-import { useResourcesStore } from '../stores/resourcesStore.jsx'
+import { updateConnectionId  } from './../stores/WebsocketStore'
+import { setPlayer, setPlayerList } from './../stores/PlayersStore'
 
-export function routeMessage(msg) {
-  switch (msg.messageType) {
-    case 'TICK':
-      useTimeStore.getState().updateTick(msg)
-      break
-      
-    case 'RESOURCES_LIST':
-      useResourcesStore.getState().updateResources( msg.messagePayload )
-      useResourcesStore.getState().setAreResourcesLoaded( true )
-      break
+import { ResponseType } from './../../../shared/messageTypes.js'
 
-    default:
-      console.warn(`Unhandled message type: ${msg.messageType}`)
-      console.warn( msg )
-  }
+
+const responseHandler = {
+  RES_CONNECTION_ID: updateConnectionId,
+  RES_PLAYER_GET: setPlayer,
+  RES_PLAYERLIST_GET: setPlayerList
+}
+
+
+export function routeMessage( response: ResponseType ) {
+
+  const handler = responseHandler[ response.header ]
+  // @ts-ignore - Not sure how to workaround this Typescript error
+  handler ( response.payload )
 }

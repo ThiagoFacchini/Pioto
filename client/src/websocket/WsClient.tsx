@@ -1,35 +1,38 @@
 import { routeMessage } from './MessageRouter'
 import { useWebSocketStore } from '../stores/WebsocketStore'
 
-import { MessageType, TypedMessage, MessagePayloads } from './../../../shared/messageTypes'
+import { RequestType } from './../../../shared/messageTypes'
 
 let socket: WebSocket | null = null
 
-export function connectWebSocket() {
-  console.log("Calling connectWebSocket")
-  socket = new WebSocket('ws://localhost:8080')
+
+function getSocket() {
+  return socket
+}
+
+
+export function connectWebSocket( addr: string, port: number ) {
+  if  (socket && socket.readyState == WebSocket.OPEN ) {
+    console.warn( '[WS] Already Connected' )
+    return
+  }
+
+  console.log(`[WS] Trying to connect to ws://${addr}:${port}...`)
+  socket = new WebSocket( `ws://${addr}:${port}` )
   
   socket.onopen = function() {
     console.log('[WS] Connected')
-    useWebSocketStore.getState().setConnected(true)
+    useWebSocketStore.getState().setConnected( true )
   }
 
   socket.onmessage = ( event ) => {
-    try {
-      const message = JSON.parse( event.data )
-      routeMessage(message)
-
-    } catch ( err ) {
-      console.error( '[WS] Failed to parse message:', event.data )
-      console.error( 'Error: ', err )
-    }
+    console.log( '[WS] Parsing Response...' )
+    parseResponse( event )
   }
 
-  
   socket.onclose = () => {
     console.log( '[WS] Disconnected' )
     useWebSocketStore.getState().setConnected( false )
-    // Optionally reconnect logic here
   }
 
   socket.onerror = ( err ) => {
@@ -39,27 +42,37 @@ export function connectWebSocket() {
 }
 
 
-function getSocket() {
-  return socket
+export function disconnectWebSocket() {
+  const ws = getSocket()
+  if ( ws instanceof WebSocket && ws?.readyState === WebSocket.OPEN ) {
+    console.log( '[WS] Trying to disconnect...' )
+    ws.close()
+    useWebSocketStore.getState().setConnected( false )
+  }
 }
 
 
-export function sendRequest( request: string ) {
+export function parseResponse( event: MessageEvent ) {
+    try {
+      const response = JSON.parse( event.data )
+      routeMessage( response )
+
+    } catch ( err ) {
+      console.error( '[WS] Failed to parse message:', event.data )
+      console.error( 'Error: ', err )
+    }
+}
+
+
+export function sendRequest( request: RequestType ) {
   const ws = getSocket()
 
   if ( ws instanceof WebSocket && ws?.readyState === WebSocket.OPEN ) {
+    // console.log( 'Sending request: ', request )
     ws.send( JSON.stringify( request ) )
+
   } else {
     console.warn( "[WS] Socket not ready:", request )
   }
 }
 
-export function sendUpdate<T extends MessageType> ( message: TypedMessage<MessagePayloads[T]> ) {
-  const ws = getSocket()
-
-  if ( ws instanceof WebSocket && ws?.readyState === WebSocket.OPEN ) {
-    ws.send( JSON.stringify( message ) )
-  } else {
-    console.warn( "[WS] Socket not ready:", message )
-  }
-}

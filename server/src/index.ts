@@ -2,11 +2,19 @@ import express from 'express'
 import cors from 'cors'
 import http from 'http'
 import path from 'path'
-
 import { WebSocketServer } from 'ws'
-import { startTimeSimulator } from './modules/TimeSimulator.js'
-import { routeMessage } from './modules/MessageRouter.js'
 import { fileURLToPath } from 'url'
+import { v4 as uuid } from 'uuid'
+
+import { addPlayer, removePlayer } from './modules/Player.ts'
+
+import { RequestType } from './../../shared/messageTypes.ts'
+import { receiveRequest } from './modules/MessageRouter.ts'
+
+
+//  Review
+import { startTimeSimulator } from './modules/TimeSimulator.ts'
+
 
 // Resolve __dirname for ES modules
 const __filename = fileURLToPath( import.meta.url )
@@ -23,26 +31,23 @@ const socketServer = new WebSocketServer( { port: 8080 } )
 
 
 socketServer.on( 'connection', ( socket ) => {
-  console.log( 'Client connected' )
+  console.log( 'Client connected!' )
 
-  socket.on( 'close', () => console.log( 'Client disconnected' ) )
+  socket.connectionId = uuid()
+  addPlayer( socket.connectionId )
 
-  socket.on('message', ( data ) => {
-    try {
-      const message = JSON.parse( data.toString() )
 
-      if (!message.messageType) {
-        console.warn( 'Received message withtout messageType: ', message )
-        return
-      }
+  socket.on( 'close', () => {
+    console.log( 'Client disconnected!' )
+    removePlayer( socket.connectionId! )
+  })
 
-      routeMessage( message.messageType, message, socket, socketServer )
-    
-    } catch ( err ) {
-      console.error( 'Failed to parse message: ', err )
-    }
-  } )
-} )
+
+  socket.on('message', ( request: MessageEvent ) => {
+    receiveRequest ( request, socket, socketServer )
+  })
+
+})
 
 console.log( 'WebSocket server running on ws://localhost:8080' )
 
@@ -54,7 +59,7 @@ server.listen( HTTP_PORT, () => {
 
 
 // Start simulator with custom config
-startTimeSimulator( socketServer, {
-  simulatedDayLengthMs: 1000 * 60 * 60, // 1 real hour = 1 sim day
-  // You can reduce this for faster dev/testing
-} )
+// startTimeSimulator( socketServer, {
+//   simulatedDayLengthMs: 1000 * 60 * 60, // 1 real hour = 1 sim day
+//   // You can reduce this for faster dev/testing
+// } )

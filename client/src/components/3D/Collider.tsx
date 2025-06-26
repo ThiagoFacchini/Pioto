@@ -1,12 +1,13 @@
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
-import { LAYER_COLLISION } from '../views/map/Scene'
+import { LAYER_COLLISION } from './../../views/map/Scene'
 
 type PropsType = {
     type: 'CUBE' | 'CYLINDER' | 'SPHERE',
     size: [ number, number, number ],
     position: [ number, number, number ],
-    isCollidable: boolean
+    isCollidable: boolean,
+    offset?: [number, number, number]
 }
 
 export default function Collider( props: PropsType ) {
@@ -45,7 +46,12 @@ export default function Collider( props: PropsType ) {
     geometry.computeBoundingBox()
 
     const adjustedPosition = new THREE.Vector3( ...props.position )
-    adjustedPosition.y = adjustedPosition.y + props.size[1] / 2
+
+    if ( props.offset ) {
+        adjustedPosition.x = adjustedPosition.x + props.offset[0]
+        adjustedPosition.y = adjustedPosition.y + props.offset[1]
+        adjustedPosition.z = adjustedPosition.z + props.offset[2]
+    }
 
     
     return (

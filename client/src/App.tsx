@@ -1,23 +1,23 @@
 import { useEffect } from 'react'
-import { Routes, Route, Link } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 
-import { connectWebSocket } from './websocket/WsClient'
+import './websocket/WsClient'
 
+import UIHeader from './components/UI/UIHeader/UIHeader'
 import Home from './views/home/Home'
 import Map from './views/map/Map'
 import NotFound from './views/notFound/NotFound'
 
 function App() {
-  useEffect( () => {
-    connectWebSocket()
-  }, [] )
-
   return (
-    <Routes>
-      <Route path="/" element={ <Home/> } />
-      <Route path="/map" element={ <Map/> } />
-      <Route path="*" element={ <NotFound/> } />
-    </Routes>
+    <>
+    <UIHeader />
+      <Routes>
+        <Route path="/" element={ <Home/> } />
+        <Route path="/map" element={ <Map/> } />
+        <Route path="*" element={ <NotFound/> } />
+      </Routes>
+    </>
   )
 }
 

@@ -3,13 +3,14 @@ import { Canvas } from '@react-three/fiber'
 import { KeyboardControls } from '@react-three/drei'
 import * as THREE from 'three'
 
-import { Resource } from '../../../../shared/resourcesType'
+import { Resource } from '../../../../shared/resourceType'
 
-import SunLight from '../../components/SunLight'
-import Camera from '../../components/Camera'
-import Character from '../../components/Character'
+import SunLight from '../../components/3D/SunLight'
+import Camera from '../../components/3D/Camera'
+import Character from '../../components/3D/PlayerCharacter'
 
 import { useResourcesStore } from '../../stores/resourcesStore'
+import { useControlsStore } from '../..//stores/controlsStore'
 
 import Rock from '../../resources/Rock'
 
@@ -20,19 +21,11 @@ export const LAYER_COLLISION = new THREE.Group()
 LAYER_COLLISION.name = "LAYER_COLLISIOIN"
 
 
-// Keyboard Controls Configuration
-export const CONTROLS = [
-  { name: 'forward', keys: [ 'w' ] },
-  { name: 'backward', keys: [ 's' ] },
-  { name: 'left', keys: [ 'a' ] },
-  { name: 'right', keys: [ 'd' ] },
-  { name: 'jump', keys: [ 'space' ] }
-]
-
 
 export default function Scene() {
   const playerRef = useRef<THREE.Object3D>(null)
-
+  
+  const controls = useControlsStore( ( state ) => state.controls )
   const resources = useResourcesStore( ( state ) => state.resources )
   const areResourcesLoaded = useResourcesStore( ( state ) => state.areResourcesLoaded )
 
@@ -46,7 +39,7 @@ export default function Scene() {
   }
 
   return (
-    <KeyboardControls map={ CONTROLS } >
+    <KeyboardControls map={ controls } >
         <Canvas>
           {/* Layers */}
           <primitive object={ LAYER_COLLISION } />

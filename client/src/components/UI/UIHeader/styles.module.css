@@ -1,0 +1,38 @@
+
+.uiheaderContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 20px;
+    background-color: #cccccc44;
+    border-bottom: 1px solid #666;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    padding-right: 10px;
+
+    
+    & .connectionContainer {
+        display: flex;
+        flex-direction: row;        
+        gap: 5px;
+
+        & .connected {
+            width: 10px;
+            height: 10px;
+            border-radius: 5px;
+            background-color: green;
+            border: 1px solid #CCC;
+        }
+
+        & .disconnected {
+            width: 10px;
+            height: 10px;
+            border-radius: 5px;
+            background-color: red;
+            border: 1px solid #CCC;
+        }
+    }
+
+}

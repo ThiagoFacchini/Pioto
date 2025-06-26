@@ -5,16 +5,16 @@ import * as THREE from 'three'
 // @ts-ignore
 import { TransformControls as ThreeTransformControls } from 'three/examples/jsm/controls/TransformControls'
 
-import { sendUpdate } from '../websocket/WsClient'
+import { sendRequest } from '../websocket/WsClient'
 
 import { useSelectionStore } from '../stores/selectionStore'
 
-import Collider from '../components/Collider'
+import Collider from './../components/3D/Collider'
 
-import { Resource } from './../../../shared/resourcesType'
+import { Resource } from '../../../shared/resourceType'
 
 type PropsType = {
-    resource: Resource
+    resource: Resource,
 }
 
 export default function Rock( props: PropsType ) {
@@ -47,10 +47,10 @@ export default function Rock( props: PropsType ) {
 
                 if ( !newPos ) return
 
-                sendUpdate( { 
-                    messageType: 'RESOURCES_UPDATE',
-                    messagePayload: { ...props.resource, position: newPos }
-                } )
+                // sendRequest( { 
+                //     messageType: 'RESOURCES_UPDATE',
+                //     messagePayload: { ...props.resource, position: newPos }
+                // } )
             }
         }
 
@@ -82,7 +82,13 @@ export default function Rock( props: PropsType ) {
                 } }
             >
                 <primitive object={ rock } castShadow receiveShadow />
-                 <Collider type="CUBE" size={ props.resource.size } position={ props.resource.position } isCollidable={ props.resource.collidable } />
+                 <Collider 
+                    type="CUBE" 
+                    size={ props.resource.size } 
+                    position={ props.resource.position } 
+                    isCollidable={ props.resource.collidable } 
+                    offset={ [ 0, props.resource.size[1] / 2, 0.03 ] }
+                />
             </group>
         )
     )

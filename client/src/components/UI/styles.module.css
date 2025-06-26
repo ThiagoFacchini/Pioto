@@ -1,0 +1,58 @@
+
+:root {
+    --font-size-xs: 8px;
+    --font-size-sm: 12px;
+    --border-radius-sm: 5px;
+}
+
+.button {
+    padding: 5px 10px 5px 10px;
+    border: 1px solid #333;
+    background-color: #FFF;
+    color: #333;
+    cursor: pointer;
+    text-align: center;
+
+    &.sm {
+        font-size: var(--font-size-sm);
+        border-radius: var(--border-radius-sm);
+    }
+
+    &:hover {
+        background-color: #CCC;
+        color: #111;
+    }
+}
+
+
+.label {
+    user-select: none;
+    cursor: default;
+
+    &.xs {
+        font-size: var(--font-size-xs);
+    }
+
+    &.sm {
+        font-size: var(--font-size-sm);
+    }
+}
+
+.inputText {
+    user-select: none;
+    outline: none;
+    background-color: #333;
+    border: 1px solid #666;
+    box-shadow: none;
+
+    &.sm {
+        font-size: var(--font-size-sm);
+        border-radius: var(--border-radius-sm);
+        padding: 5px;
+    }
+
+    &:focus {
+        background-color: #666;
+        border-color: #FFF;
+    }
+}

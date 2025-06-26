@@ -8,7 +8,7 @@ type TimeStoreType = {
     updateTick: ( payload: TickPayload ) => void
 }
 
-export const useTimeStore = create((set) => ({
+export const useTimeStore = create<TimeStoreType>((set) => ({
   simTime: '00:00',
   simMinute: 0,
   timestamp: 0,
