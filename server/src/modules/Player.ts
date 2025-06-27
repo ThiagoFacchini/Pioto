@@ -12,10 +12,8 @@ const Players: Array<PlayerType> = []
 
 
 export function addPlayer ( cid: ConnectionIdType ) {
-    if ( !findPlayerByConnectionID( cid ) ) {
+    if ( findPlayerByConnectionID( cid ) === false ) {
         console.log( "Adding new player..." )
-
-        // Check the database for login / password and retrieve player
 
         Players.push(
             { 
@@ -30,17 +28,41 @@ export function addPlayer ( cid: ConnectionIdType ) {
 
 export function removePlayer ( cid: ConnectionIdType ) {
     console.log( `Removing player ${cid}...` )
-    const index = Players.findIndex( player => player.connectionId === cid )
 
-    if ( index !== -1 ) {
-        Players.splice( index, 1 )
+    const playerIndex = findPlayerByConnectionID( cid )
+    if (  playerIndex ) {
+        Players.splice( playerIndex, 1 )
         console.log( `Player ${cid} removed!` )
     }
 }
 
 
+export function updatePlayer ( index: number, player: PlayerType ) {
+    if ( Players[ index ] ) {
+        Players[ index ] = player
+    } else {
+        console.log( `Player index ${index} not found.` )
+    }
+}
+
+
 export function findPlayerByConnectionID ( cid: ConnectionIdType ) {
-    return Players.find( player => player.connectionId = cid )
+    const index = Players.findIndex( player => player.connectionId === cid )
+
+    if ( index !== -1 ) {
+        return index
+    } else {
+        return false
+    }
+}
+
+
+export function getPlayerByIndex( index: number ) {
+    if ( Players[ index ] ) {
+        return Players[ index ] 
+    }
+
+    return false
 }
 
 
@@ -56,21 +78,40 @@ export function requestConnectionId ( request: RequestPayloadType, socket: WebSo
 }
 
 
-export function requestPlayerGet ( request: RequestPayloadType, socket: WebSocket, socketServer: WebSocketServer ) {
-    const player = findPlayerByConnectionID( request!.cid )
-    
-    const response: ResponseType = {
-        header: 'RES_PLAYER_GET',
-        payload: {
-            player: player
-        }
-    }
+export function characterSelect( request: RequestPayloadType, socket: WebSocket, socketServer: WebSocketServer ) {
+    const playerIndex = findPlayerByConnectionID( socket.connectionId! )
 
-    socket.send( JSON.stringify( response ) )
+    if ( playerIndex !== false ) {
+        Players[ playerIndex ].name = request.characterName
+        console.log( `Character: ${request.characterName} selected for account ${Players[ playerIndex ].username} (${socket.connectionId})` )
+
+        const response: ResponseType = {
+            header: 'RES_CHARACTER_SELECT',
+            payload: null
+        }
+
+        socket.send( JSON.stringify( response ) )
+    }
 }
 
 
-export function requestPlayerUpdate ( request: RequestPayloadType, socket: WebSocket, socketServer: WebSocketServer) {
+export function requestPlayerGet ( request: RequestPayloadType, socket: WebSocket, socketServer: WebSocketServer ) {
+    const playerIndex = findPlayerByConnectionID( request!.cid )
+    
+    if ( playerIndex !== false ) {
+        const response: ResponseType = {
+            header: 'RES_PLAYER_GET',
+            payload: {
+                player: Players[ playerIndex ]
+            }
+        }
+
+        socket.send( JSON.stringify( response ) )
+    }
+}
+
+
+export function requestPlayerUpdate ( request: RequestPayloadType, socket: WebSocket, socketServer: WebSocketServer ) {
     const index = Players.findIndex( player => player.connectionId === request!.connectionId )
 
     if ( index !== -1 ) {
@@ -87,7 +128,7 @@ export function requestPlayerListGet( request: RequestPayloadType, socket: WebSo
             playerList: Players
         }
     }
-
+    
     socket.send( JSON.stringify( response ) )
 }
 
@@ -95,8 +136,11 @@ export function requestPlayerListGet( request: RequestPayloadType, socket: WebSo
 export default {
     addPlayer: addPlayer,
     removePlayer: removePlayer,
+    updatePlayer: updatePlayer,
+    getPlayerByIndex: getPlayerByIndex,
     findPlayerByConnectionID: findPlayerByConnectionID,
     requestConnectionId: requestConnectionId,
+    characterSelect: characterSelect,
     requestPlayerGet: requestPlayerGet,
     requestPlayerListGet: requestPlayerListGet,
     requestPlayerUpdate: requestPlayerUpdate

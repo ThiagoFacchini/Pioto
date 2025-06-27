@@ -1,5 +1,5 @@
 import { useEffect, useRef, RefObject } from 'react'
-import { useGLTF, useAnimations, useKeyboardControls } from '@react-three/drei'
+import { useGLTF, useAnimations, useKeyboardControls, Text } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
@@ -8,6 +8,7 @@ import { LAYER_COLLISION } from '../../views/map/Scene'
 
 type PropsType = {
     forwardedRef: RefObject<THREE.Object3D | null>,
+    name?: string,
     position: [ number, number, number ],
     rotation: [ number, number, number ],
     updateCallback: () => void,
@@ -34,6 +35,7 @@ export default function PlayerCharacter( props: PropsType ) {
     const isMovingRef = useRef( false )
     const collisionBoxRef = useRef( new THREE.Box3() )
     const boxHelperRef = useRef<THREE.Box3Helper>( null )
+    const nameTagRef = useRef<THREE.Object3D>( null )
 
     let lastUpdateTime = 0
 
@@ -167,8 +169,34 @@ export default function PlayerCharacter( props: PropsType ) {
             lastUpdateTime = performance.now()
             props.updateCallback()
         }
+
+        // Render Nametag
+        if ( ref.current && nameTagRef.current ) {
+            const modelHeight = 2
+            const charPos = ref.current.position
+            nameTagRef.current.position.set( charPos.x , charPos.y + modelHeight, charPos.z )
+        }
     } )
 
 
-    return <primitive object={ gltf.scene } ref={ ref } position={ props.position } rotation={ props.rotation } />
+    return (
+        <group ref={ ref } position={ props.position } rotation={ props.rotation }>
+            {/* Character Model */}
+            <primitive object={ gltf.scene } />
+            
+            {/* Name tag */}
+            <Text
+                ref={ nameTagRef }
+                position={ props.position }
+                fontSize={ 0.15 }
+                color="white"
+                anchorX="center"
+                anchorY="bottom"
+                outlineWidth={ 0.01 }
+                outlineColor="black"
+            >
+                { props.name ? props.name : 'unknown' }
+            </Text>
+        </group>
+    )
 }

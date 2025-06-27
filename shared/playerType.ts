@@ -2,7 +2,8 @@ export type ConnectionIdType = string
 
 export type PlayerType = {
     connectionId: ConnectionIdType,
-    name?: string
+    username?: string,
+    name?: string,
     position: [ number, number, number ],
     rotation: [ number, number, number ]
 }

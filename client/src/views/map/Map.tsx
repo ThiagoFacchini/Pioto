@@ -29,22 +29,24 @@ function Map() {
     const navigate = useNavigate()
 
     const isConnected = useWebSocketStore( ( state ) => state.isConnected )
+    const isAuthenticated = useWebSocketStore( ( state ) => state.isAuthenticated )
+    const isCharacterSelected = useWebSocketStore( ( state ) => state.isCharacterSelected )
     const connectionId = useWebSocketStore( ( state ) => state.connectionId )
-    
+    const clearWebsocketStore = useWebSocketStore( ( state ) => state.clearStore )    
 
     const controls = useControlsStore( ( state ) => state.controls )
     
     const player = usePlayersStore( ( state ) => state.player )
     const playerList = usePlayersStore( ( state ) => state.playerList )
-
     const clearPlayerStore = usePlayersStore( ( state ) => state.clearStore  )
 
 
     // Send user back to login
     useEffect( () => {
-        if ( !isConnected ) {
+        if ( !isConnected || !isAuthenticated || !isCharacterSelected ) {
             navigate("/", { replace: true } ) 
             clearPlayerStore()
+            clearWebsocketStore()
         }
     }, [ isConnected ] )
 
@@ -100,6 +102,7 @@ function Map() {
             return (
                 <PlayerCharacter 
                     forwardedRef={ playerRef } 
+                    name={ player.name }
                     position={ player.position }
                     rotation={ player.rotation }
                     updateCallback={ updatePlayer }

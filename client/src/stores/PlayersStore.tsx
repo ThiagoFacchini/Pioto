@@ -1,7 +1,8 @@
 import { create } from 'zustand'
+import { devtools } from 'zustand/middleware'
 
 import type { PlayerType } from '../../../shared/playerType'
-import type { ResponsePlayerGetPayloadType, ResponsePlayerListGetPayloadType } from '../../../shared/messageTypes'
+import type { ResponsePlayerGetPayloadType, ResponsePlayerListGetPayloadType, ResponseCharacterSelectPayloadType } from '../../../shared/messageTypes'
 
 
 type PlayerStoreType = {
@@ -12,8 +13,8 @@ type PlayerStoreType = {
     clearStore: () => void
 }
 
-
-export const usePlayersStore = create<PlayerStoreType>( ( set ) => ( {
+// @ts-ignore
+export const usePlayersStore = create<PlayerStoreType>( devtools( ( set ) => ( {
     player: null,
     playerList: null,
     setPlayer: ( player ) => set( { player: player } ),
@@ -25,7 +26,7 @@ export const usePlayersStore = create<PlayerStoreType>( ( set ) => ( {
             playerList: null
         })
     }
-} ) )
+} ), { name: 'PlayerStore' } ) )
 
 
 export function setPlayer( payload: ResponsePlayerGetPayloadType ) {

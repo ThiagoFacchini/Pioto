@@ -3,6 +3,7 @@ import type { WebSocket, WebSocketServer } from 'ws'
 
 import { getResources, updateResources } from "./Resources.ts"
 import Player from './Player.ts'
+import Authentication from './Authentication.ts'
 
 import { ConnectionIdType  } from 'shared/playerType.ts'
 import { RequestType, RequestHeaderType, RequestPayloadType, ResponsePayloadType } from './../../../shared/messageTypes.ts'
@@ -10,9 +11,11 @@ import { RequestType, RequestHeaderType, RequestPayloadType, ResponsePayloadType
 
 const requestHandler = {
     REQ_CONNECTION_ID: Player.requestConnectionId,
+    REQ_AUTHENTICATE: Authentication.authenticate,
+    REQ_CHARACTER_SELECT: Player.characterSelect,
     REQ_PLAYER_GET: Player.requestPlayerGet,
     REQ_PLAYERLIST_GET: Player.requestPlayerListGet,
-    REQ_PLAYER_UPDATE: Player.requestPlayerUpdate
+    REQ_PLAYER_UPDATE: Player.requestPlayerUpdate,
 }
 
 
@@ -24,6 +27,7 @@ export function receiveRequest( request: MessageEvent, socket: WebSocket, socket
 
         const handler = requestHandler[ parsedRequest.header ]
         handler( parsedRequest.payload, socket, socketServer )
+
     } catch ( e ) {
         console.error('Failed to parseRequest ', parsedRequest)
     }

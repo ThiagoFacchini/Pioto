@@ -4,7 +4,8 @@ import { Routes, Route } from 'react-router-dom'
 import './websocket/WsClient'
 
 import UIHeader from './components/UI/UIHeader/UIHeader'
-import Home from './views/home/Home'
+import Login from './views/login/Login'
+import CharacterSelection from './views/characterSelection/CharacterSelection'
 import Map from './views/map/Map'
 import NotFound from './views/notFound/NotFound'
 
@@ -13,7 +14,8 @@ function App() {
     <>
     <UIHeader />
       <Routes>
-        <Route path="/" element={ <Home/> } />
+        <Route path="/" element={ <Login/> } />
+        <Route path="/characterSelection" element={ <CharacterSelection /> } />
         <Route path="/map" element={ <Map/> } />
         <Route path="*" element={ <NotFound/> } />
       </Routes>
