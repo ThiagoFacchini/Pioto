@@ -1,10 +1,11 @@
 import { WebSocket, WebSocketServer } from 'ws'
+import { serverBroadcast } from './Broadcast.ts'
 
 
 //  @ts-ignore
 import type { PlayerType, ConnectionIdType } from '../../../shared/playerType.ts'
 // @ts-ignore
-import { RequestPayloadType, ResponsePayloadType, ResponseType, RequestPlayerGetPayloadType } from './../../../shared/messageTypes.ts'
+import { RequestPayloadType, ResponseType } from './../../../shared/messageTypes.ts'
 
 
 const Players: Array<PlayerType> = []
@@ -35,6 +36,15 @@ export function removePlayer ( cid: ConnectionIdType ) {
         Players.splice( playerIndex, 1 )
         console.log( `Player ${cid} removed!` )
         console.log(  Players.length , ' players left.' )
+
+        let broadcastResponse: ResponseType = {
+            header: 'RES_PLAYERLIST_GET',
+            payload: {
+                playerList: Players
+            }
+        }
+
+        serverBroadcast( broadcastResponse )
     }
 }
 
@@ -100,20 +110,14 @@ export function requestCharacterSelect( request: RequestPayloadType, socket: Web
         // Confirm selection with the player
         socket.send( JSON.stringify( response ) )
 
-        // Broadcast to player the new player
-        socketServer.clients.forEach(( client ) => {
-            if ( client.readyState === 1 ) {
-
-                const response: ResponseType = {
-                    header: 'RES_PLAYERLIST_GET',
-                    payload: {
-                        playerList: Players
-                    }
-                }
-                
-                client.send( JSON.stringify( response ) )
+        let broadcastResponse: ResponseType = {
+            header: 'RES_PLAYERLIST_GET',
+            payload: {
+                playerList: Players
             }
-        })
+        }
+
+        serverBroadcast( broadcastResponse )
     }
 }
 
@@ -139,6 +143,15 @@ export function requestPlayerUpdate ( request: RequestPayloadType, socket: WebSo
 
     if ( index !== -1 ) {
         Players[ index ] = request
+
+        let broadcastResponse: ResponseType = {
+            header: 'RES_PLAYERLIST_GET',
+            payload: {
+                playerList: Players
+            }
+        }
+
+        serverBroadcast( broadcastResponse )
     }
 }
 

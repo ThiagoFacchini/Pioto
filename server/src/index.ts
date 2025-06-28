@@ -10,6 +10,7 @@ import { addPlayer, removePlayer } from './modules/Player.ts'
 
 import { RequestType } from './../../shared/messageTypes.ts'
 import { receiveRequest } from './modules/MessageRouter.ts'
+import { attachSocketServer } from './modules/Broadcast.ts'
 
 
 //  Review
@@ -29,6 +30,7 @@ const server = http.createServer( app )
 const HTTP_PORT = 8081
 const socketServer = new WebSocketServer( { port: 8080 } )
 
+attachSocketServer( socketServer )
 
 socketServer.on( 'connection', ( socket ) => {
   console.log( 'Client connected!' )
@@ -54,7 +56,7 @@ console.log( 'WebSocket server running on ws://localhost:8080' )
 
 server.listen( HTTP_PORT, () => {
   console.log( `HTTP Server running at http:L//localhost:${HTTP_PORT}` )
-  console.log( `Models server from http://localhost:${HTTP_PORT}/models` )
+  console.log( `Models served at http://localhost:${HTTP_PORT}/models` )
 } )
 
 

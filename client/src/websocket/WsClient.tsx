@@ -26,7 +26,7 @@ export function connectWebSocket( addr: string, port: number, username: string, 
   }
 
   socket.onmessage = ( event ) => {
-    console.log( '[WS] Parsing Response...' )
+    // console.log( '[WS] Parsing Response...' )
     parseResponse( event )
   }
 

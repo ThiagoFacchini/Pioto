@@ -6,7 +6,7 @@ import Player from './Player.ts'
 import Authentication from './Authentication.ts'
 
 import { ConnectionIdType  } from 'shared/playerType.ts'
-import { RequestType, RequestHeaderType, RequestPayloadType, ResponsePayloadType } from './../../../shared/messageTypes.ts'
+import { RequestType, ResponseType } from './../../../shared/messageTypes.ts'
 
 
 const requestHandler = {
@@ -18,13 +18,10 @@ const requestHandler = {
     REQ_PLAYER_UPDATE: Player.requestPlayerUpdate,
 }
 
-
 export function receiveRequest( request: MessageEvent, socket: WebSocket, socketServer: WebSocketServer) {
     const parsedRequest: RequestType = JSON.parse( request.toString() )
 
     try {
-        console.log( parsedRequest.header )
-
         const handler = requestHandler[ parsedRequest.header ]
         handler( parsedRequest.payload, socket, socketServer )
 

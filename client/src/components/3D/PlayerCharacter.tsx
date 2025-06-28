@@ -50,6 +50,7 @@ export default function PlayerCharacter(props: PropsType) {
     useEffect( () => {
         if ( props.forwardedRef && characterRef.current ) {
             props.forwardedRef.current = characterRef.current
+            characterRef.current.userData.currentAnimation = 'Idle'
         }
     }, [ props.forwardedRef ] )
 
@@ -161,6 +162,8 @@ export default function PlayerCharacter(props: PropsType) {
             props.updateCallback()
         }
     } )
+
+
 
 
     // Positioning nameTag

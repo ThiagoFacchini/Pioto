@@ -17,6 +17,7 @@ type PropsType = {
 
 
 function Character ( props: PropsType ) {
+
     const gltf = useGLTF( "http://10.0.1.184:8081/models/BaseCharacter-v2.glb" )
     const clonedInstance = useMemo(() => {
         const instance = clone( gltf.scene )
@@ -28,12 +29,27 @@ function Character ( props: PropsType ) {
     const { animations } = gltf
     const characterRef = useRef<THREE.Group>( null )
     const { actions } = useAnimations( animations, clonedInstance )
-
-   const nameTagRef = useRef<THREE.Object3D>( null )
+    const nameTagRef = useRef<THREE.Object3D>( null )
+    const currentAnimationRef = useRef<string | null>( null )
 
    useEffect( () => { 
-    if ( actions && props.animationName ) {
-        actions[ props.animationName ]?.reset().fadeIn( 0.2 ).play()
+    if ( !actions || !props.animationName ) return
+
+    // Skip if the equest animation is already playing
+    if ( currentAnimationRef.current == props.animationName ) return
+
+    const newAction = actions[ props.animationName ]
+
+    if ( newAction ) {
+        // Fade out previous action
+        if ( currentAnimationRef.current ) {
+            const prevAction = actions[ currentAnimationRef.current ]
+            prevAction?.fadeOut( 0.2 )
+        }
+
+        // Start new action
+        newAction.reset().fadeIn(0.2).play()
+        currentAnimationRef.current = props.animationName
     }
    }, [ actions, props.animationName ] )
 

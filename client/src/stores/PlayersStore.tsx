@@ -30,11 +30,9 @@ export const usePlayersStore = create<PlayerStoreType>( devtools( ( set ) => ( {
 
 
 export function setPlayer( payload: ResponsePlayerGetPayloadType ) {
-    console.log( "Updating Player..." )
     usePlayersStore.getState().setPlayer( payload.player )
 }
 
 export function setPlayerList( payload: ResponsePlayerListGetPayloadType ) {
-    console.log( 'Updating Playerlist...' )
     usePlayersStore.getState().setPlayerList( payload.playerList )
 }
