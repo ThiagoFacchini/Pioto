@@ -7,6 +7,7 @@ import * as THREE from 'three'
 import SunLight from '../../components/3D/SunLight'
 import Camera from '../../components/3D/Camera'
 import PlayerCharacter from '../../components/3D/PlayerCharacter'
+import Character from '../../components/3D/Character'
 
 import { sendRequest } from "../../websocket/WsClient"
 
@@ -85,7 +86,12 @@ function Map() {
                 header: 'REQ_PLAYER_UPDATE',
                 payload: { 
                     ...player,
-                    position: playerRef.current.position,
+                    animationName: playerRef.current.userData.currentAnimation,
+                    position: [
+                        playerRef.current.position.x,
+                        playerRef.current.position.y,
+                        playerRef.current.position.z
+                    ],
                     rotation: [
                         playerRef.current.rotation.x,
                         playerRef.current.rotation.y,
@@ -97,7 +103,7 @@ function Map() {
     }    
     
 
-    function renderPlayer () {
+    function renderPlayerCharacter () {
         if ( player !== null ) {
             return (
                 <PlayerCharacter 
@@ -111,6 +117,25 @@ function Map() {
                 />
             )
         }
+    }
+
+
+    function renderPlayers() {
+        if ( !playerList ) return null
+
+        return playerList
+            .filter(( player ) => player.connectionId !== connectionId )
+            .map( ( player ) => {
+                return  (
+                    <Character
+                        key={ player.connectionId } 
+                        position={ player.position } 
+                        rotation={ player.rotation }  
+                        animationName={ player.animationName } 
+                        name={ player.name! }
+                    />
+                )
+            })
     }
 
 
@@ -130,9 +155,12 @@ function Map() {
                             <meshStandardMaterial color="green" />
                         </mesh>
 
-                        { renderPlayer() }
+                        { renderPlayerCharacter() }
+                        { renderPlayers() }
             
                         <Camera targetRef={ playerRef } />
+
+                        
                     </Canvas>
                 </KeyboardControls>
             </div>

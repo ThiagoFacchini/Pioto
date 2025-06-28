@@ -18,6 +18,7 @@ export function addPlayer ( cid: ConnectionIdType ) {
         Players.push(
             { 
                 connectionId: cid,
+                animationName: 'Idle',
                 position: [ 0, 0, 0 ],
                 rotation: [ 0, 0, 0 ]
             } 
@@ -30,9 +31,10 @@ export function removePlayer ( cid: ConnectionIdType ) {
     console.log( `Removing player ${cid}...` )
 
     const playerIndex = findPlayerByConnectionID( cid )
-    if (  playerIndex ) {
+    if (  playerIndex !== false ) {
         Players.splice( playerIndex, 1 )
         console.log( `Player ${cid} removed!` )
+        console.log(  Players.length , ' players left.' )
     }
 }
 
@@ -66,6 +68,11 @@ export function getPlayerByIndex( index: number ) {
 }
 
 
+export function getPlayerCount () {
+    return Players.length
+}
+
+
 export function requestConnectionId ( request: RequestPayloadType, socket: WebSocket, socketServer: WebSocketServer ) {
     const response: ResponseType = {
         header: 'RES_CONNECTION_ID',
@@ -78,7 +85,7 @@ export function requestConnectionId ( request: RequestPayloadType, socket: WebSo
 }
 
 
-export function characterSelect( request: RequestPayloadType, socket: WebSocket, socketServer: WebSocketServer ) {
+export function requestCharacterSelect( request: RequestPayloadType, socket: WebSocket, socketServer: WebSocketServer ) {
     const playerIndex = findPlayerByConnectionID( socket.connectionId! )
 
     if ( playerIndex !== false ) {
@@ -90,7 +97,23 @@ export function characterSelect( request: RequestPayloadType, socket: WebSocket,
             payload: null
         }
 
+        // Confirm selection with the player
         socket.send( JSON.stringify( response ) )
+
+        // Broadcast to player the new player
+        socketServer.clients.forEach(( client ) => {
+            if ( client.readyState === 1 ) {
+
+                const response: ResponseType = {
+                    header: 'RES_PLAYERLIST_GET',
+                    payload: {
+                        playerList: Players
+                    }
+                }
+                
+                client.send( JSON.stringify( response ) )
+            }
+        })
     }
 }
 
@@ -116,7 +139,6 @@ export function requestPlayerUpdate ( request: RequestPayloadType, socket: WebSo
 
     if ( index !== -1 ) {
         Players[ index ] = request
-        console.log( Players[ index ] )
     }
 }
 
@@ -140,7 +162,7 @@ export default {
     getPlayerByIndex: getPlayerByIndex,
     findPlayerByConnectionID: findPlayerByConnectionID,
     requestConnectionId: requestConnectionId,
-    characterSelect: characterSelect,
+    requestCharacterSelect: requestCharacterSelect,
     requestPlayerGet: requestPlayerGet,
     requestPlayerListGet: requestPlayerListGet,
     requestPlayerUpdate: requestPlayerUpdate

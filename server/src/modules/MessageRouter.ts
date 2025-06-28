@@ -12,7 +12,7 @@ import { RequestType, RequestHeaderType, RequestPayloadType, ResponsePayloadType
 const requestHandler = {
     REQ_CONNECTION_ID: Player.requestConnectionId,
     REQ_AUTHENTICATE: Authentication.authenticate,
-    REQ_CHARACTER_SELECT: Player.characterSelect,
+    REQ_CHARACTER_SELECT: Player.requestCharacterSelect,
     REQ_PLAYER_GET: Player.requestPlayerGet,
     REQ_PLAYERLIST_GET: Player.requestPlayerListGet,
     REQ_PLAYER_UPDATE: Player.requestPlayerUpdate,
