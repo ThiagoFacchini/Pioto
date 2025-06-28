@@ -4,19 +4,20 @@ import { Canvas } from '@react-three/fiber'
 import { KeyboardControls } from '@react-three/drei'
 import * as THREE from 'three'
 
+import FPSCounter from '../../components/3D/FPSCounter'
 import SunLight from '../../components/3D/SunLight'
 import Camera from '../../components/3D/Camera'
 import PlayerCharacter from '../../components/3D/PlayerCharacter'
 import Character from '../../components/3D/Character'
 
+import { ping as sendPing } from './../../websocket/LatencyCounter'
 import { sendRequest } from "../../websocket/WsClient"
 
+import { useDebugStore } from "../../stores/DebugStore"
 import { useWebSocketStore } from "../../stores/WebsocketStore"
 import { useControlsStore } from '../../stores/controlsStore'
 import { usePlayersStore } from "../../stores/PlayersStore"
 import { useResourcesStore } from "../../stores/resourcesStore"
-
-import Scene from "./Scene"
 
 
 // Map Logical Components
@@ -28,6 +29,8 @@ function Map() {
     const playerRef = useRef<THREE.Object3D>(null)
 
     const navigate = useNavigate()
+
+    const setPosition = useDebugStore( ( state ) => state.setPosition )
 
     const isConnected = useWebSocketStore( ( state ) => state.isConnected )
     const isAuthenticated = useWebSocketStore( ( state ) => state.isAuthenticated )
@@ -80,6 +83,15 @@ function Map() {
     }, [ playerList ] )
 
 
+    // Tracks Latency
+    useEffect( () => {
+        const interval = setInterval( () => {
+            sendPing()
+        }, 5000)
+
+    }, [] )
+
+
     function updatePlayer () {
         if (player !== null && playerRef.current != null ) {
             sendRequest( {
@@ -99,6 +111,13 @@ function Map() {
                     ]
                 }
             })
+
+            // Debug - Update Player Position
+            setPosition( [ 
+                parseFloat( playerRef.current.position.x.toFixed( 1 ) ), 
+                parseFloat( playerRef.current.position.y.toFixed( 1 ) ), 
+                parseFloat( playerRef.current.position.z.toFixed( 1 ) ), 
+            ] )
         }
     }    
     
@@ -160,7 +179,8 @@ function Map() {
             
                         <Camera targetRef={ playerRef } />
 
-                        
+                        {/* Debug tools */}
+                        <FPSCounter />
                     </Canvas>
                 </KeyboardControls>
             </div>

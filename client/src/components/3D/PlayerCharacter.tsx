@@ -4,7 +4,9 @@ import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils'
 
-import { LAYER_COLLISION } from '../../views/map/Scene'
+import { useDebugStore } from '../../stores/DebugStore'
+
+import { LAYER_COLLISION } from '../../views/map/Map'
 
 type PropsType = {
     forwardedRef: RefObject<THREE.Object3D | null>,
@@ -29,6 +31,8 @@ export default function PlayerCharacter(props: PropsType) {
         instance.rotation.set( 0, 0, 0 )
         return instance
     }, [gltf.scene] )
+
+    const shouldShowCollisions = useDebugStore( ( state ) => state.showCollisions )
 
     const characterRef = useRef<THREE.Group>( null )
     const nameTagRef = useRef<THREE.Object3D>( null )
@@ -61,7 +65,7 @@ export default function PlayerCharacter(props: PropsType) {
 
 
     useEffect( () => {
-        const helper = new THREE.Box3Helper( collisionBoxRef.current, 0xffff00 )
+        const helper = new THREE.Box3Helper( collisionBoxRef.current, "red" )
 
         if ( characterRef.current ) {
             collisionBoxRef.current.copy(computeCollisionBox( characterRef.current.position ) )
@@ -74,6 +78,13 @@ export default function PlayerCharacter(props: PropsType) {
             characterRef.current?.parent?.remove( helper )
         }
     }, [])
+
+
+    useEffect( () => {
+        if ( boxHelperRef.current ) {
+            boxHelperRef.current.visible = shouldShowCollisions
+        }
+    }, [ shouldShowCollisions ] )
 
 
     function computeCollisionBox( basePos: THREE.Vector3, offset: THREE.Vector3 = new THREE.Vector3() ) {

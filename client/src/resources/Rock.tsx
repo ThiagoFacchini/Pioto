@@ -7,7 +7,7 @@ import { TransformControls as ThreeTransformControls } from 'three/examples/jsm/
 
 import { sendRequest } from '../websocket/WsClient'
 
-import { useSelectionStore } from '../stores/selectionStore'
+import { useBuildStore } from '../stores/BuildStore'
 
 import Collider from './../components/3D/Collider'
 
@@ -24,7 +24,7 @@ export default function Rock( props: PropsType ) {
     const meshRef = useRef< THREE.Group >( null )
     const controlsRef = useRef<ThreeTransformControls<Camera> | null>( null )
 
-    const { selectedResourceId, selectResource, clearSelection } = useSelectionStore()
+    const { selectedResourceId, selectResource, clearSelection } = useBuildStore()
     const isSelected = selectedResourceId === props.resource.id
 
     useEffect( () => {

@@ -32,30 +32,32 @@ function Character ( props: PropsType ) {
     const nameTagRef = useRef<THREE.Object3D>( null )
     const currentAnimationRef = useRef<string | null>( null )
 
-   useEffect( () => { 
-    if ( !actions || !props.animationName ) return
 
-    // Skip if the equest animation is already playing
-    if ( currentAnimationRef.current == props.animationName ) return
+    // Controlling animations
+    useEffect( () => { 
+        if ( !actions || !props.animationName ) return
 
-    const newAction = actions[ props.animationName ]
+        // Skip if the equest animation is already playing
+        if ( currentAnimationRef.current == props.animationName ) return
 
-    if ( newAction ) {
-        // Fade out previous action
-        if ( currentAnimationRef.current ) {
-            const prevAction = actions[ currentAnimationRef.current ]
-            prevAction?.fadeOut( 0.2 )
+        const newAction = actions[ props.animationName ]
+
+        if ( newAction ) {
+            // Fade out previous action
+            if ( currentAnimationRef.current ) {
+                const prevAction = actions[ currentAnimationRef.current ]
+                prevAction?.fadeOut( 0.2 )
+            }
+
+            // Start new action
+            newAction.reset().fadeIn(0.2).play()
+            currentAnimationRef.current = props.animationName
         }
-
-        // Start new action
-        newAction.reset().fadeIn(0.2).play()
-        currentAnimationRef.current = props.animationName
-    }
    }, [ actions, props.animationName ] )
 
 
+   // Positioning nameTag
    useFrame( ( { camera } ) => {
-        // Positioning nameTag
         if ( characterRef.current && nameTagRef.current ) {
             nameTagRef.current.lookAt( camera.position )
         }

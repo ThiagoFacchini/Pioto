@@ -4,6 +4,7 @@ import type { WebSocket, WebSocketServer } from 'ws'
 import { getResources, updateResources } from "./Resources.ts"
 import Player from './Player.ts'
 import Authentication from './Authentication.ts'
+import { requestPing } from './Networks.ts'
 
 import { ConnectionIdType  } from 'shared/playerType.ts'
 import { RequestType, ResponseType } from './../../../shared/messageTypes.ts'
@@ -16,6 +17,7 @@ const requestHandler = {
     REQ_PLAYER_GET: Player.requestPlayerGet,
     REQ_PLAYERLIST_GET: Player.requestPlayerListGet,
     REQ_PLAYER_UPDATE: Player.requestPlayerUpdate,
+    REQ_PING: requestPing
 }
 
 export function receiveRequest( request: MessageEvent, socket: WebSocket, socketServer: WebSocketServer) {

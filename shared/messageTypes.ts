@@ -10,7 +10,8 @@ export type RequestHeaderType =
     'REQ_CHARACTER_SELECT' |
     'REQ_PLAYER_GET' | 
     'REQ_PLAYERLIST_GET' | 
-    'REQ_PLAYER_UPDATE'
+    'REQ_PLAYER_UPDATE' |
+    'REQ_PING'
 
 export type RequestConnectionIdPayloadType = null
 export type RequestAuthenticatePayloadType = { username: string, password: string }
@@ -18,6 +19,7 @@ export type RequestCharacterSelectPayloadType = { characterName: string }
 export type RequestPlayerGetPayloadType = { cid: string }
 export type RequestPlayerListGetPayloadType = null
 export type RequestPlayerUpdatePayloadType = Player
+export type RequestPingPayloadType = null
 
 export type RequestPayloadType = 
     RequestConnectionIdPayloadType | 
@@ -25,7 +27,8 @@ export type RequestPayloadType =
     RequestCharacterSelectPayloadType |
     RequestPlayerGetPayloadType | 
     RequestPlayerListGetPayloadType | 
-    RequestPlayerUpdatePayloadType
+    RequestPlayerUpdatePayloadType |
+    RequestPingPayloadType
 
 
 
@@ -35,7 +38,8 @@ export type ResponseHeaderType =
     'RES_CHARACTER_SELECT' |
     'RES_PLAYER_GET' | 
     'RES_PLAYERLIST_GET' | 
-    'RES_CHARACTER_LIST'
+    'RES_CHARACTER_LIST' |
+    'RES_PONG'
 
 export type ResponseConnectionIdPayloadType = { cid: string }
 export type ResponseAuthenticatePayloadType = { characters: string[] }
@@ -43,6 +47,7 @@ export type ResponseCharacterSelectPayloadType = null
 export type ResponsePlayerGetPayloadType = { player: Player }
 export type ResponsePlayerListGetPayloadType = { playerList: Array<Player> }
 export type ResponseCharacterListPayloadType = { username: string, charactersList: Array<string> }
+export type ResponsePongPayloadType = null
 
 export type ResponsePayloadType = 
     ResponseConnectionIdPayloadType | 
@@ -50,7 +55,8 @@ export type ResponsePayloadType =
     ResponseCharacterSelectPayloadType |
     ResponsePlayerGetPayloadType | 
     ResponsePlayerListGetPayloadType |
-    ResponseCharacterListPayloadType
+    ResponseCharacterListPayloadType |
+    ResponsePongPayloadType
 
     
 
