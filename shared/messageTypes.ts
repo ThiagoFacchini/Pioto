@@ -11,7 +11,9 @@ export type RequestHeaderType =
     'REQ_PLAYER_GET' | 
     'REQ_PLAYERLIST_GET' | 
     'REQ_PLAYER_UPDATE' |
-    'REQ_PING'
+    'REQ_PING' |
+    'REQ_MAP_RESOURCES_GET' |
+    'REQ_MAP_RESOURCE_UPDATE' 
 
 export type RequestConnectionIdPayloadType = null
 export type RequestAuthenticatePayloadType = { username: string, password: string }
@@ -20,6 +22,8 @@ export type RequestPlayerGetPayloadType = { cid: string }
 export type RequestPlayerListGetPayloadType = null
 export type RequestPlayerUpdatePayloadType = Player
 export type RequestPingPayloadType = null
+export type RequestMapResourcesGetPayloadType = null
+export type RequestMapResourceUpdatePayloadType = { resource: Resource }
 
 export type RequestPayloadType = 
     RequestConnectionIdPayloadType | 
@@ -28,7 +32,9 @@ export type RequestPayloadType =
     RequestPlayerGetPayloadType | 
     RequestPlayerListGetPayloadType | 
     RequestPlayerUpdatePayloadType |
-    RequestPingPayloadType
+    RequestPingPayloadType |
+    RequestMapResourcesGetPayloadType |
+    RequestMapResourceUpdatePayloadType
 
 
 
@@ -39,7 +45,9 @@ export type ResponseHeaderType =
     'RES_PLAYER_GET' | 
     'RES_PLAYERLIST_GET' | 
     'RES_CHARACTER_LIST' |
-    'RES_PONG'
+    'RES_PONG' |
+    'RES_MAP_RESOURCES_GET'
+
 
 export type ResponseConnectionIdPayloadType = { cid: string }
 export type ResponseAuthenticatePayloadType = { characters: string[] }
@@ -48,6 +56,7 @@ export type ResponsePlayerGetPayloadType = { player: Player }
 export type ResponsePlayerListGetPayloadType = { playerList: Array<Player> }
 export type ResponseCharacterListPayloadType = { username: string, charactersList: Array<string> }
 export type ResponsePongPayloadType = null
+export type ResponseMapResourcesGetPayloadType = { resources: Array<Resource> }
 
 export type ResponsePayloadType = 
     ResponseConnectionIdPayloadType | 
@@ -56,7 +65,8 @@ export type ResponsePayloadType =
     ResponsePlayerGetPayloadType | 
     ResponsePlayerListGetPayloadType |
     ResponseCharacterListPayloadType |
-    ResponsePongPayloadType
+    ResponsePongPayloadType |
+    ResponseMapResourcesGetPayloadType
 
     
 

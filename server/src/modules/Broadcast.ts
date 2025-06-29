@@ -1,4 +1,5 @@
 import { WebSocket, WebSocketServer } from "ws"
+// @ts-ignore
 import { ResponseType } from './../../../shared/messageTypes.ts'
 
 let socketServer: WebSocketServer

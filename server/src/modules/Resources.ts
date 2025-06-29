@@ -1,14 +1,13 @@
 import { WebSocket, WebSocketServer } from "ws";
-import { MessageCreator } from "../classes/MessageCreator.ts"
+import { serverBroadcast } from './Broadcast.ts'
 
 import type { Resource } from '../../../shared/resourceType.ts'
-import type { MessagePayloads, TypedMessage } from './../../../shared/messageTypes.ts'
+import type { RequestPayloadType, ResponseType } from './../../../shared/messageTypes.ts'
 
 
-
-const resources: Array<Resource> = [
+const Resources: Array<Resource> = [
         {
-            id: 1,
+            id: '1',
             type: "rock",
             meshFile: "rock 1.glb",
             position: [ 3, -0.2, 3 ],
@@ -16,7 +15,7 @@ const resources: Array<Resource> = [
             collidable: true
         },
         {
-            id: 2,
+            id: '2',
             type: "rock",
             meshFile: "rock 1.glb",
             position: [ 6, -0.4, 8 ],
@@ -26,39 +25,61 @@ const resources: Array<Resource> = [
 ]
 
 
-export function getResources ( 
-    _: null, 
-    client: WebSocket, 
-    socketServer: WebSocketServer 
-) {
-    const resourcesMessage = new MessageCreator( 'RESOURCES_LIST', resources )
-    client.send( resourcesMessage.toJSON() )
+
+// ==================================================================================================================================
+// PRIVATE METHODS
+// ==================================================================================================================================
+function findResourceById ( rid: string ) {
+    const index = Resources.findIndex( resource => resource.id === rid )
+
+    if ( index !== -1 ) {
+        return index
+    } else {
+        return false
+    }
 }
+// ==================================================================================================================================
 
 
-export function updateResources ( 
-    payload: TypedMessage<MessagePayloads['RESOURCES_UPDATE']>, 
-    socket: WebSocket, 
-    socketServer: WebSocketServer 
-) {
-    resources.forEach( ( resource ) => {
-        if ( resource.id === message.messagePayload.id ) {
-            Object.assign( resource, message.messagePayload )
-            broadcastResourcesUpdate( message, socket, socketServer )
+// ==================================================================================================================================
+// PUBLIC METHODS
+// ==================================================================================================================================
+function requestMapResourceUpdate ( request: RequestPayloadType, socket: WebSocket, socketServer: WebSocketServer ) {
+    const resourceIndex = findResourceById( request.resource.id )
+
+    
+    if ( resourceIndex !== false ) {
+            console.log('Before Update: ', Resources[ resourceIndex ].position )
+            Resources[ resourceIndex ] = request.resource
+            console.log('After Update: ', Resources[ resourceIndex ].position )
+
+        let broadcastResponse: ResponseType = {
+            header: 'RES_MAP_RESOURCES_GET',
+            payload: {
+                resources: Resources
+            }
         }
-    })
+
+        serverBroadcast( broadcastResponse )
+    }
 }
 
 
-export function broadcastResourcesUpdate ( 
-    message: TypedMessage<MessagePayloads['RESOURCES_UPDATE']>, 
-    socket: WebSocket, 
-    socketServer: WebSocketServer 
-) {
-    const resourcesUpdatedMessage = new MessageCreator( 'RESOURCES_LIST', resources )
-    socketServer.clients.forEach((client) => {
-      if (client.readyState === 1) {
-        client.send( resourcesUpdatedMessage.toJSON() )
-      }
-    })
+function requestMapResourcesGet( request: RequestPayloadType, socket: WebSocket, socketServer: WebSocketServer ) {
+    const response: ResponseType = {
+        header: 'RES_MAP_RESOURCES_GET',
+        payload: {
+            resources: Resources
+        }
+    }
+    
+    socket.send( JSON.stringify( response ) )
+}
+// ==================================================================================================================================
+
+
+
+export default {
+    requestMapResourceUpdate: requestMapResourceUpdate,
+    requestMapResourcesGet: requestMapResourcesGet 
 }

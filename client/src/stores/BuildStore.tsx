@@ -1,13 +1,13 @@
 import { create } from 'zustand'
 
 type BuildStoreType = {
-    selectedResourceId: number | null,
-    selectResource: ( id: number ) => void,
+    selectedResourceId: string | null,
+    selectResource: ( id: string ) => void,
     clearSelection: () => void 
 }
 
 export const useBuildStore = create<BuildStoreType> ( ( set ) => ( {
     selectedResourceId: null,
-    selectResource: ( id: number ) => set( { selectedResourceId: id } ),
+    selectResource: ( id ) => set( { selectedResourceId: id } ),
     clearSelection: () => set({ selectedResourceId: null } )
 } ) )

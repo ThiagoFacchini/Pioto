@@ -1,7 +1,6 @@
 import type { WebSocket, WebSocketServer } from 'ws'
-// import type { MessageType, MessagePayloads } from './../../../shared/messageTypes.ts'
 
-import { getResources, updateResources } from "./Resources.ts"
+import Resources from "./Resources.ts"
 import Player from './Player.ts'
 import Authentication from './Authentication.ts'
 import { requestPing } from './Networks.ts'
@@ -17,7 +16,9 @@ const requestHandler = {
     REQ_PLAYER_GET: Player.requestPlayerGet,
     REQ_PLAYERLIST_GET: Player.requestPlayerListGet,
     REQ_PLAYER_UPDATE: Player.requestPlayerUpdate,
-    REQ_PING: requestPing
+    REQ_PING: requestPing,
+    REQ_MAP_RESOURCES_GET: Resources.requestMapResourcesGet,
+    REQ_MAP_RESOURCE_UPDATE: Resources.requestMapResourceUpdate
 }
 
 export function receiveRequest( request: MessageEvent, socket: WebSocket, socketServer: WebSocketServer) {
@@ -25,6 +26,7 @@ export function receiveRequest( request: MessageEvent, socket: WebSocket, socket
 
     try {
         const handler = requestHandler[ parsedRequest.header ]
+        // @ts-ignore
         handler( parsedRequest.payload, socket, socketServer )
 
     } catch ( e ) {

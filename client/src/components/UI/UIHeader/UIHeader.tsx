@@ -52,9 +52,9 @@ export default function UIHeader () {
 
 
     function handleCollision( event: React.ChangeEvent<HTMLInputElement>) {
-        console.log("print")
         setShowCollisions( event.target.checked )
     }
+
 
      return (
         <div className={ styles.uiheaderContainer } >

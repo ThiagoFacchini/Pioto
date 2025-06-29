@@ -3,39 +3,37 @@ import { WebSocket, WebSocketServer } from 'ws'
 import Player from './Player.ts'
 
 import { RequestPayloadType } from './../../../shared/messageTypes.ts'
+import { PlayerType } from './../../../shared/playerType.ts'
 
 
 
 export function authenticate( request: RequestPayloadType, socket: WebSocket, socketServer: WebSocketServer ) {
     console.log( 'Trying to authenticate connectionId: ',  socket.connectionId! )
-    const playerIndex = Player.findPlayerByConnectionID( socket.connectionId! )
-    console.log( playerIndex )
+    const player = Player.getPlayerByConnectionId( socket.connectionId! )
     
-    if ( playerIndex === false ) {
+    if ( player === false ) {
         console.log( "Couldn't find a matching connection Id " )
     } else {
         console.log( "Connection ID found, authenticating..." )
         console.log( 'Authenticated, assigning data' )
 
-        const player = Player.getPlayerByIndex( playerIndex )
-        
-        if ( player ) {
-            Player.updatePlayer( playerIndex, { ...player, username: request.username! } )
-            const charList = getCharacterList()
-
-            const response = {
-                header: "RES_CHARACTER_LIST",
-                payload: {
-                    username: request.username,
-                    charactersList: charList
-                }
-            }
-            socket.send( JSON.stringify( response ) )
-
-
-        } else {
-            console.log( 'Could not assign data' )
+     
+        const updatedPlayer: PlayerType = {
+            ...player, username: request.username!
         }
+
+        Player.requestPlayerUpdate( updatedPlayer, socket, socketServer )
+        
+        const charList = getCharacterList()
+
+        const response = {
+            header: "RES_CHARACTER_LIST",
+            payload: {
+                username: request.username,
+                charactersList: charList
+            }
+        }
+        socket.send( JSON.stringify( response ) )
     }
 }
 

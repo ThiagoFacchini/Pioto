@@ -6,7 +6,7 @@ import { WebSocketServer } from 'ws'
 import { fileURLToPath } from 'url'
 import { v4 as uuid } from 'uuid'
 
-import { addPlayer, removePlayer } from './modules/Player.ts'
+import Player from './modules/Player.ts'
 
 import { RequestType } from './../../shared/messageTypes.ts'
 import { receiveRequest } from './modules/MessageRouter.ts'
@@ -36,12 +36,12 @@ socketServer.on( 'connection', ( socket ) => {
   console.log( 'Client connected!' )
 
   socket.connectionId = uuid()
-  addPlayer( socket.connectionId )
+  Player.requestAddPlayer( socket.connectionId )
 
 
   socket.on( 'close', () => {
     console.log( 'Client disconnected!' )
-    removePlayer( socket.connectionId! )
+    Player.requestRemovePlayer( socket.connectionId! )
   })
 
 

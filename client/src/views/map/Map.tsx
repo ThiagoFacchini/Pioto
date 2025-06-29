@@ -17,7 +17,8 @@ import { useDebugStore } from "../../stores/DebugStore"
 import { useWebSocketStore } from "../../stores/WebsocketStore"
 import { useControlsStore } from '../../stores/controlsStore'
 import { usePlayersStore } from "../../stores/PlayersStore"
-import { useResourcesStore } from "../../stores/resourcesStore"
+import { useResourcesStore } from "../../stores/ResourcesStore"
+import Rock from './../../resources/Rock'
 
 
 // Map Logical Components
@@ -39,6 +40,9 @@ function Map() {
     const clearWebsocketStore = useWebSocketStore( ( state ) => state.clearStore )    
 
     const controls = useControlsStore( ( state ) => state.controls )
+
+    const areResourcesLoaded = useResourcesStore( ( state ) => state.areResourcesLoaded )
+    const resources = useResourcesStore( ( state ) => state.resources )
     
     const player = usePlayersStore( ( state ) => state.player )
     const playerList = usePlayersStore( ( state ) => state.playerList )
@@ -53,6 +57,19 @@ function Map() {
             clearWebsocketStore()
         }
     }, [ isConnected ] )
+
+
+    // Load resources
+    useEffect( () => {
+        if ( !areResourcesLoaded ) {
+            console.log( 'Requesting Resources...' )
+
+            sendRequest( {
+                header: 'REQ_MAP_RESOURCES_GET',
+                payload: null
+            })
+        }
+    }, [ areResourcesLoaded ])
 
 
     // Load player
@@ -92,6 +109,7 @@ function Map() {
     }, [] )
 
 
+    // Send Player updates to server
     function updatePlayer () {
         if (player !== null && playerRef.current != null ) {
             sendRequest( {
@@ -120,8 +138,26 @@ function Map() {
             ] )
         }
     }    
+
+
+    // Render map resources
+    function renderMapResources () {
+        if ( !resources ) return null
+
+        return resources
+            .filter(( resource ) => resource.type === 'rock' )
+            .map( ( resource ) => {
+                return (
+                    <Rock
+                        key={ resource.id }
+                        resource={ resource }
+                    />
+                )
+            })
+    }
     
 
+    // Render the player Character
     function renderPlayerCharacter () {
         if ( player !== null ) {
             return (
@@ -139,6 +175,7 @@ function Map() {
     }
 
 
+    // Render other players
     function renderPlayers() {
         if ( !playerList ) return null
 
@@ -169,11 +206,12 @@ function Map() {
                         <ambientLight intensity={0.5} />
                         <SunLight />
 
-                        <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-                            <planeGeometry args={[20, 20]} />
+                        <mesh rotation={ [-Math.PI / 2, 0, 0] } receiveShadow>
+                            <planeGeometry args={ [20, 20] } />
                             <meshStandardMaterial color="green" />
                         </mesh>
 
+                        { renderMapResources() }
                         { renderPlayerCharacter() }
                         { renderPlayers() }
             

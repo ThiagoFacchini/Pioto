@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
-import { LAYER_COLLISION } from './../../views/map/Scene'
+import { LAYER_COLLISION } from './../../views/map/Map'
 
 type PropsType = {
     type: 'CUBE' | 'CYLINDER' | 'SPHERE',

@@ -1,25 +1,33 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useMemo } from 'react'
 import { useGLTF, TransformControls } from '@react-three/drei'
 import * as THREE from 'three'
+import { clone } from 'three/examples/jsm/utils/SkeletonUtils'
 
 // @ts-ignore
 import { TransformControls as ThreeTransformControls } from 'three/examples/jsm/controls/TransformControls'
+import { Resource } from '../../../shared/resourceType'
+
+import Collider from './../components/3D/Collider'
 
 import { sendRequest } from '../websocket/WsClient'
 
 import { useBuildStore } from '../stores/BuildStore'
 
-import Collider from './../components/3D/Collider'
 
-import { Resource } from '../../../shared/resourceType'
 
 type PropsType = {
     resource: Resource,
 }
 
 export default function Rock( props: PropsType ) {
-    const { scene } = useGLTF('http://10.0.1.184:8081/models/Rock 1.glb')
-    const rock = scene.clone( true )
+    const gltf = useGLTF('http://10.0.1.184:8081/models/Rock 1.glb')
+    
+    const rock = useMemo(() => {
+        const instance = clone( gltf.scene )
+        instance.position.set( 0, 0, 0 )
+        instance.rotation.set( 0, 0, 0 )
+        return instance
+    }, [gltf.scene] )
 
     const meshRef = useRef< THREE.Group >( null )
     const controlsRef = useRef<ThreeTransformControls<Camera> | null>( null )
@@ -27,6 +35,8 @@ export default function Rock( props: PropsType ) {
     const { selectedResourceId, selectResource, clearSelection } = useBuildStore()
     const isSelected = selectedResourceId === props.resource.id
 
+    
+    // Unselect
     useEffect( () => {
         const handleKeyDown = ( e: KeyboardEvent ) => {
             if (e.key === 'Escape') clearSelection()
@@ -38,8 +48,7 @@ export default function Rock( props: PropsType ) {
 
 
     useEffect( () => {
-        const controls = controlsRef.current
-        if ( !controls || !isSelected ) return
+        if ( !controlsRef.current || !isSelected ) return
 
         const handleMouseUp = () => {
             if ( controlsRef.current ) {
@@ -47,17 +56,19 @@ export default function Rock( props: PropsType ) {
 
                 if ( !newPos ) return
 
-                // sendRequest( { 
-                //     messageType: 'RESOURCES_UPDATE',
-                //     messagePayload: { ...props.resource, position: newPos }
-                // } )
+                sendRequest( { 
+                    header: 'REQ_MAP_RESOURCE_UPDATE',
+                    payload: { resource: { ...props.resource, position: newPos } }
+                } )
             }
         }
 
         window.addEventListener( 'mouseup', handleMouseUp )
         return () => window.removeEventListener( 'mouseup', handleMouseUp )
     } )
-   
+
+    if (controlsRef.current) console.log('TransformControls attached to:', controlsRef.current.object);
+
 
     return (
         isSelected ? (

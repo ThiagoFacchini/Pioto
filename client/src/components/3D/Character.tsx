@@ -2,10 +2,10 @@ import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { useGLTF, useAnimations, Text } from '@react-three/drei'
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils'
+import { useRef, useEffect, useMemo } from 'react'
 
 import { AnimationNameType } from './../../../../shared/playerType'
 
-import { useRef, useEffect, useMemo } from 'react'
 
 
 type PropsType = {
