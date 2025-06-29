@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useCallback } from "react"
 import { useNavigate  } from "react-router-dom"
 import { Canvas } from '@react-three/fiber'
 import { KeyboardControls } from '@react-three/drei'
@@ -29,6 +29,7 @@ LAYER_COLLISION.name = "LAYER_COLLISIOIN"
 function Map() {
     const playerRef = useRef<THREE.Object3D>(null)
 
+    console.log('re rendering')
     const navigate = useNavigate()
 
     const setPosition = useDebugStore( ( state ) => state.setPosition )
@@ -47,7 +48,6 @@ function Map() {
     const player = usePlayersStore( ( state ) => state.player )
     const playerList = usePlayersStore( ( state ) => state.playerList )
     const clearPlayerStore = usePlayersStore( ( state ) => state.clearStore  )
-
 
     // Send user back to login
     useEffect( () => {
@@ -110,7 +110,7 @@ function Map() {
 
 
     // Send Player updates to server
-    function updatePlayer () {
+    const updatePlayer = useCallback (() => {
         if (player !== null && playerRef.current != null ) {
             sendRequest( {
                 header: 'REQ_PLAYER_UPDATE',
@@ -131,13 +131,13 @@ function Map() {
             })
 
             // Debug - Update Player Position
-            setPosition( [ 
-                parseFloat( playerRef.current.position.x.toFixed( 1 ) ), 
-                parseFloat( playerRef.current.position.y.toFixed( 1 ) ), 
-                parseFloat( playerRef.current.position.z.toFixed( 1 ) ), 
-            ] )
+            // setPosition( [ 
+            //     parseFloat( playerRef.current.position.x.toFixed( 1 ) ), 
+            //     parseFloat( playerRef.current.position.y.toFixed( 1 ) ), 
+            //     parseFloat( playerRef.current.position.z.toFixed( 1 ) ), 
+            // ] )
         }
-    }    
+    }, [ player ] )
 
 
     // Render map resources

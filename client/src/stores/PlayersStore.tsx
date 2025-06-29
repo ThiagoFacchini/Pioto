@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
+import isEqual from 'lodash/isEqual'
 
 import type { PlayerType } from '../../../shared/playerType'
 import type { ResponsePlayerGetPayloadType, ResponsePlayerListGetPayloadType, ResponseCharacterSelectPayloadType } from '../../../shared/messageTypes'
@@ -34,5 +35,13 @@ export function setPlayer( payload: ResponsePlayerGetPayloadType ) {
 }
 
 export function setPlayerList( payload: ResponsePlayerListGetPayloadType ) {
-    usePlayersStore.getState().setPlayerList( payload.playerList )
+    const currentList = usePlayersStore.getState().playerList
+    const newList = payload.playerList
+
+    if ( !isEqual( currentList, newList ) ) {
+        usePlayersStore.getState().setPlayerList( newList )
+        console.log( "Playerlist updated." )
+    } else {
+        console.log( "Playerlist update avoided.")
+    }
 }
