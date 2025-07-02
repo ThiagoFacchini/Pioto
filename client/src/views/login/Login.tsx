@@ -3,7 +3,7 @@ import { useState, useEffect } from "react"
 
 import { connectWebSocket, sendRequest } from "../../websocket/WsClient"
 import { useWebSocketStore } from "../../stores/WebsocketStore"
-import { usePlayersStore } from "../../stores/PlayersStore"
+import { useConfigsStore } from "../../stores/ConfigsStore"
 
 
 import classNames from 'classnames'
@@ -22,10 +22,13 @@ function Login() {
     const isCharacterSelected = useWebSocketStore( ( state ) => state.isCharacterSelected )
 
 
+    const serverAddress = useConfigsStore( ( state ) => state.serverAddress )
+    const serverPort = useConfigsStore( ( state ) => state.serverPort )
+    const setServerAddress = useConfigsStore( ( state ) => state.setServerAddress )
+    const setServerPort = useConfigsStore( ( state ) => state.setServerPort )
+
     const [ formState, setFormState ] = useState( '' )
 
-    const [ serverAddr, setServerAddr ] = useState( 'localhost' )
-    const [ serverPort, setServerPort ] = useState( 8080 )
     const [ username, setUsername ] = useState( '' )
     const [ password, setPassword ] = useState( '' )
 
@@ -64,8 +67,8 @@ function Login() {
 
 
     function tryLogin() {
-        if ( serverAddr && serverPort && username && password ) {
-            connectWebSocket( serverAddr, serverPort, username, password )
+        if ( serverAddress && serverPort && username && password ) {
+            connectWebSocket( serverAddress, serverPort, username, password )
         } else {
             setFormState( "error" )
         }
@@ -83,9 +86,9 @@ function Login() {
                         <input
                             type="text"
                             className={ classNames( [ uiStyles.inputText, uiStyles.sm ] ) }
-                            value={ serverAddr }
-                            onChange={ ( e ) => setServerAddr( e.target.value ) }
-                            placeholder={ serverAddr }
+                            value={ serverAddress }
+                            onChange={ ( e ) => setServerAddress( e.target.value ) }
+                            placeholder={ serverAddress }
                         />
                     </div>
                     <div>

@@ -15,7 +15,7 @@ import { sendRequest } from "../../websocket/WsClient"
 
 import { useDebugStore } from "../../stores/DebugStore"
 import { useWebSocketStore } from "../../stores/WebsocketStore"
-import { useControlsStore } from '../../stores/controlsStore'
+import { useConfigsStore } from '../../stores/ConfigsStore'
 import { usePlayersStore } from "../../stores/PlayersStore"
 import { useResourcesStore } from "../../stores/ResourcesStore"
 import Rock from './../../resources/Rock'
@@ -40,7 +40,7 @@ function Map() {
     const connectionId = useWebSocketStore( ( state ) => state.connectionId )
     const clearWebsocketStore = useWebSocketStore( ( state ) => state.clearStore )    
 
-    const controls = useControlsStore( ( state ) => state.controls )
+    const controls = useConfigsStore( ( state ) => state.controls )
 
     const areResourcesLoaded = useResourcesStore( ( state ) => state.areResourcesLoaded )
     const resources = useResourcesStore( ( state ) => state.resources )
@@ -193,7 +193,6 @@ function Map() {
                 )
             })
     }
-
 
     return (
         <>

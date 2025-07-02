@@ -5,6 +5,7 @@ import * as THREE from 'three'
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils'
 
 import { useDebugStore } from '../../stores/DebugStore'
+import { useConfigsStore } from '../../stores/ConfigsStore'
 
 import { LAYER_COLLISION } from '../../views/map/Map'
 
@@ -23,7 +24,9 @@ type ControlKeys = 'forward' | 'backward' | 'left' | 'right' | 'jump'
 const updateRate = 100 // ms
 
 export default function PlayerCharacter(props: PropsType) {
-    const gltf = useGLTF('http://10.0.1.184:8081/models/BaseCharacter-v2.glb')
+    const serverAddress = useConfigsStore( ( state ) => state.serverAddress )
+
+    const gltf = useGLTF(`http://${serverAddress}:8081/models/BaseCharacter-v2.glb`)
 
     const clonedInstance = useMemo(() => {
         const instance = clone( gltf.scene )

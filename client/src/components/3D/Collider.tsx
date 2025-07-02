@@ -7,7 +7,8 @@ type PropsType = {
     size: [ number, number, number ],
     position: [ number, number, number ],
     isCollidable: boolean,
-    offset?: [number, number, number]
+    offset?: [number, number, number],
+    isVisible: boolean
 }
 
 export default function Collider( props: PropsType ) {
@@ -59,7 +60,7 @@ export default function Collider( props: PropsType ) {
             ref={ ref }
             position={ new THREE.Vector3( ...adjustedPosition ) }
             userData={ { collidable: props.isCollidable } }
-            visible={ true }
+            visible={ props.isVisible }
         >
             { geometry && <primitive object={ geometry } attach="geometry" /> }
             <meshBasicMaterial color="red" wireframe transparent opacity={ 1 } />

@@ -9,6 +9,7 @@ import { sendRequest } from '../websocket/WsClient'
 
 import { useBuildStore } from '../stores/BuildStore'
 import { useDebugStore } from '../stores/DebugStore'
+import { useConfigsStore } from '../stores/ConfigsStore'
 
 
 type PropsType = {
@@ -16,7 +17,9 @@ type PropsType = {
 }
 
 export default function Rock( props: PropsType ) {
-    const { scene } = useGLTF('http://10.0.1.184:8081/models/Rock 1.glb')
+    const serverAddress = useConfigsStore( ( state ) => state.serverAddress )
+
+    const { scene } = useGLTF(`http://${serverAddress}:8081/models/Rock 1.glb`)
     const rock = scene.clone( true )
 
     const meshRef = useRef< THREE.Group >( null )
@@ -61,19 +64,16 @@ export default function Rock( props: PropsType ) {
 
 
     function shouldRenderCollider () {
-        if ( showCollisions ) {
-            return (
-                 <Collider 
-                    type="CUBE" 
-                    size={ props.resource.size } 
-                    position={ props.resource.position } 
-                    isCollidable={ props.resource.collidable } 
-                    offset={ [ 0, props.resource.size[1] / 2, 0.03 ] }
-                />
-            )
-        }
-
-        return null
+        return (
+                <Collider 
+                type="CUBE" 
+                size={ props.resource.size } 
+                position={ props.resource.position } 
+                isCollidable={ props.resource.collidable } 
+                offset={ [ 0, props.resource.size[1] / 2, 0.03 ] }
+                isVisible={ showCollisions }
+            />
+        )
     }
 
  

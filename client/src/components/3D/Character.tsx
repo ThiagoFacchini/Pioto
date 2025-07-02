@@ -6,7 +6,7 @@ import { useRef, useEffect, useMemo } from 'react'
 
 import { AnimationNameType } from './../../../../shared/playerType'
 
-
+import { useConfigsStore } from '../../stores/ConfigsStore'
 
 type PropsType = {
     name?: string,
@@ -17,8 +17,9 @@ type PropsType = {
 
 
 function Character ( props: PropsType ) {
+    const serverAddress = useConfigsStore( ( state ) => state.serverAddress )
 
-    const gltf = useGLTF( "http://10.0.1.184:8081/models/BaseCharacter-v2.glb" )
+    const gltf = useGLTF( `http://${serverAddress}:8081/models/BaseCharacter-v2.glb` )
     const clonedInstance = useMemo(() => {
         const instance = clone( gltf.scene )
         instance.position.set( 0, 0, 0 )
