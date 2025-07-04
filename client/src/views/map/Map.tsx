@@ -9,15 +9,13 @@ import SunLight from '../../components/3D/SunLight'
 import Camera from '../../components/3D/Camera'
 import PlayerCharacter from '../../components/3D/PlayerCharacter'
 import Characters from '../../components/3D/Characters'
+import Resources from '../../components/3D/Resources'
 
 import { ping as sendPing } from './../../websocket/LatencyCounter'
-import { sendRequest } from "../../websocket/WsClient"
 
 import { useWebSocketStore } from "../../stores/WebsocketStore"
 import { useConfigsStore } from '../../stores/ConfigsStore'
 import { usePlayersStore } from "../../stores/PlayersStore"
-import { useResourcesStore } from "../../stores/ResourcesStore"
-import Rock from './../../resources/Rock'
 
 
 // Map Logical Components
@@ -37,9 +35,6 @@ function Map() {
     const clearWebsocketStore = useWebSocketStore( ( state ) => state.clearStore )    
     
     const controls = useConfigsStore( ( state ) => state.controls )
-    
-    const areResourcesLoaded = useResourcesStore( ( state ) => state.areResourcesLoaded )
-    const resources = useResourcesStore( ( state ) => state.resources )
         
     const clearPlayerStore = usePlayersStore( ( state ) => state.clearStore  )
 
@@ -57,20 +52,6 @@ function Map() {
     }, [ isConnected ] )
 
 
-    // Load resources
-    useEffect( () => {
-        if ( !areResourcesLoaded ) {
-            console.log( 'Requesting Resources...' )
-
-            sendRequest( {
-                header: 'REQ_MAP_RESOURCES_GET',
-                payload: null
-            })
-        }
-    }, [ areResourcesLoaded ] )
-
-
-
     // Tracks Latency
     useEffect( () => {
         const interval = setInterval( () => {
@@ -78,23 +59,6 @@ function Map() {
         }, 5000)
 
     }, [] )
-
-
-    // Render map resources
-    function renderMapResources () {
-        if ( !resources ) return null
-
-        return resources
-            .filter(( resource ) => resource.type === 'rock' )
-            .map( ( resource ) => {
-                return (
-                    <Rock
-                        key={ resource.id }
-                        resource={ resource }
-                    />
-                )
-            })
-    }
 
 
     return (
@@ -116,9 +80,8 @@ function Map() {
                         {/* <Suspense fallback={ null } > */}
                             <PlayerCharacter forwardedRef={ playerRef } />
                             <Characters />
+                            <Resources />
                         {/* </Suspense> */}
-                        
-                        { renderMapResources() }
                         
                         
                         <Camera targetRef={ playerRef } />
