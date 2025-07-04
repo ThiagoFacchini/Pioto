@@ -8,7 +8,7 @@ import FPSCounter from '../../components/3D/FPSCounter'
 import SunLight from '../../components/3D/SunLight'
 import Camera from '../../components/3D/Camera'
 import PlayerCharacter from '../../components/3D/PlayerCharacter'
-import Character from '../../components/3D/Character'
+import Characters from '../../components/3D/Characters'
 
 import { ping as sendPing } from './../../websocket/LatencyCounter'
 import { sendRequest } from "../../websocket/WsClient"
@@ -26,7 +26,7 @@ LAYER_COLLISION.name = "LAYER_COLLISIOIN"
 
 
 function Map() {
-    console.log('re rendering')
+    console.log('map re rendering')
     const navigate = useNavigate()
 
     
@@ -41,7 +41,6 @@ function Map() {
     const areResourcesLoaded = useResourcesStore( ( state ) => state.areResourcesLoaded )
     const resources = useResourcesStore( ( state ) => state.resources )
         
-    const playerList = usePlayersStore( ( state ) => state.playerList )
     const clearPlayerStore = usePlayersStore( ( state ) => state.clearStore  )
 
 
@@ -71,18 +70,6 @@ function Map() {
     }, [ areResourcesLoaded ] )
 
 
-    // Load playerList
-    useEffect( () => { 
-        if ( playerList === null ) {
-            console.log( 'Requesting PlayerList...' )
-
-            sendRequest( {
-                header: 'REQ_PLAYERLIST_GET',
-                payload: null
-            } )
-        }
-    }, [ playerList ] )
-
 
     // Tracks Latency
     useEffect( () => {
@@ -110,26 +97,6 @@ function Map() {
     }
 
 
-    // Render other players
-    function renderPlayers() {
-        if ( !playerList ) return null
-
-        return playerList
-            .filter(( player ) => player.connectionId !== connectionId )
-            .map( ( player ) => {
-                return  (
-                    <Character
-                        key={ player.connectionId } 
-                        position={ player.position } 
-                        rotation={ player.rotation }  
-                        animationName={ player.animationName } 
-                        name={ player.name! }
-                    />
-                )
-            })
-    }
-
-
     return (
         <>
             <div style={{ width: '100vw', height: '100vh' }}>
@@ -146,12 +113,13 @@ function Map() {
                             <meshStandardMaterial color="green" />
                         </mesh>
 
-                        <Suspense fallback={ null } >
+                        {/* <Suspense fallback={ null } > */}
                             <PlayerCharacter forwardedRef={ playerRef } />
-                        </Suspense>
+                            <Characters />
+                        {/* </Suspense> */}
                         
                         { renderMapResources() }
-                        { renderPlayers() }
+                        
                         
                         <Camera targetRef={ playerRef } />
 
