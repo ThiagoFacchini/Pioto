@@ -75,6 +75,7 @@ function requestAddPlayer ( cid: ConnectionIdType ) {
             { 
                 connectionId: cid,
                 animationName: 'Idle',
+                meshName: 'BaseCharacter-v2.glb',
                 position: [ 0, 0, 0 ],
                 rotation: [ 0, 0, 0 ]
             } 

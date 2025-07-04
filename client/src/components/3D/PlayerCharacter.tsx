@@ -4,29 +4,83 @@ import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils'
 
-import { useDebugStore } from '../../stores/DebugStore'
-import { useConfigsStore } from '../../stores/ConfigsStore'
 
 import { LAYER_COLLISION } from '../../views/map/Map'
+import { sendRequest } from "../../websocket/WsClient"
+
+
+import { useDebugStore } from '../../stores/DebugStore'
+import { useConfigsStore } from '../../stores/ConfigsStore'
+import { usePlayersStore } from '../../stores/PlayersStore'
+import { useWebSocketStore } from '../../stores/WebsocketStore'
+
+
+// ==================================================================================================================================
+// [ ENTITY CONFIGURAATION ]
+// ==================================================================================================================================
+// Defines which keys will have a rection on this entity
+type ControlKeys = 'forward' | 'backward' | 'left' | 'right' | 'jump'
+// Defines how often it sends updates to the server
+const updateRate = 100 // ms
+// ==================================================================================================================================
+
+
+// ==================================================================================================================================
+// [ HELPER FUNCTIONS ]
+// ==================================================================================================================================
+
+// Send Player updates to server
+// This functions gets called depending on the update rate, that means from time to time it will be called to update the server
+// about the player position, animationName and so on
+const updatePlayer = function ( character: THREE.Group, playerData: any, setPosition: ( position: [ number, number, number ] ) => void ) {
+    
+    if ( character != null ) {
+        sendRequest( {
+            header: 'REQ_PLAYER_UPDATE',
+            payload: { 
+                ...playerData,
+                animationName: character.userData.currentAnimation,
+                position: [
+                    character.position.x,
+                    character.position.y,
+                    character.position.z
+                ],
+                rotation: [
+                    character.rotation.x,
+                    character.rotation.y,
+                    character.rotation.z
+                ]
+            }
+        })
+
+        // Debug - Update Player Position
+        setPosition( [ 
+            parseFloat( character.position.x.toFixed( 1 ) ), 
+            parseFloat( character.position.y.toFixed( 1 ) ), 
+            parseFloat( character.position.z.toFixed( 1 ) ), 
+        ] )
+    }
+}
+// ==================================================================================================================================
+
 
 type PropsType = {
     forwardedRef: RefObject<THREE.Object3D | null>,
-    name?: string,
-    position: [number, number, number],
-    rotation: [number, number, number],
-    updateCallback: () => void,
-    showEyes: boolean,
-    scale: number,
 }
-
-type ControlKeys = 'forward' | 'backward' | 'left' | 'right' | 'jump'
-
-const updateRate = 100 // ms
 
 export default function PlayerCharacter(props: PropsType) {
     const serverAddress = useConfigsStore( ( state ) => state.serverAddress )
 
-    const gltf = useGLTF(`http://${serverAddress}:8081/models/BaseCharacter-v2.glb`)
+    const shouldShowCollisions = useDebugStore( ( state ) => state.showCollisions )
+    const setPosition = useDebugStore( ( state ) => state.setPosition )
+
+    const player = usePlayersStore( ( state ) => state.player )
+
+    const connectionId = useWebSocketStore( ( state ) => state.connectionId )
+
+    
+    let gltf = useGLTF(`http://${serverAddress}:8081/models/BaseCharacter-v2.glb`)
+    
 
     const clonedInstance = useMemo(() => {
         const instance = clone( gltf.scene )
@@ -35,8 +89,7 @@ export default function PlayerCharacter(props: PropsType) {
         return instance
     }, [gltf.scene] )
 
-    const shouldShowCollisions = useDebugStore( ( state ) => state.showCollisions )
-
+    
     const characterRef = useRef<THREE.Group>( null )
     const nameTagRef = useRef<THREE.Object3D>( null )
     const collisionBoxRef = useRef (new THREE.Box3() )
@@ -54,14 +107,29 @@ export default function PlayerCharacter(props: PropsType) {
     const characterSize = new THREE.Vector3( 0.8, 1.7, 0.8 )
 
 
+    // 1 - Send request to get player information
     useEffect( () => {
-        if ( props.forwardedRef && characterRef.current ) {
+        if ( player === null ) {
+            sendRequest( {
+                header: 'REQ_PLAYER_GET',
+                payload: {
+                    cid: connectionId
+                }
+            } )
+        }
+    }, [ player ])
+
+
+    // 2 - With the player information the characterRef assigned, sets prop.forwardRef (Map.tsx)
+    useEffect( () => {
+        if ( props.forwardedRef && characterRef.current && player !== null) {
             props.forwardedRef.current = characterRef.current
             characterRef.current.userData.currentAnimation = 'Idle'
         }
-    }, [ props.forwardedRef ] )
+    }, [ props.forwardedRef, player ] )
 
 
+    // Put the player character into IDLE animation
     useEffect( () => {
         actions['Idle']?.reset().fadeIn( 0.2 ).play()
     }, [ actions ] )
@@ -71,7 +139,8 @@ export default function PlayerCharacter(props: PropsType) {
         const helper = new THREE.Box3Helper( collisionBoxRef.current, "red" )
 
         if ( characterRef.current ) {
-            collisionBoxRef.current.copy(computeCollisionBox( characterRef.current.position ) )
+            console.log('there is a characterRef.current')
+            collisionBoxRef.current.copy( computeCollisionBox( characterRef.current.position ) )
 
             boxHelperRef.current = helper
             characterRef.current?.parent?.add( helper )
@@ -80,14 +149,16 @@ export default function PlayerCharacter(props: PropsType) {
         return () => {
             characterRef.current?.parent?.remove( helper )
         }
-    }, [])
+    }, [ player ])
 
 
+    // Show or hide the collision helper based on DebugStore flags
     useEffect( () => {
         if ( boxHelperRef.current ) {
             boxHelperRef.current.visible = shouldShowCollisions
         }
     }, [ shouldShowCollisions ] )
+
 
 
     function computeCollisionBox( basePos: THREE.Vector3, offset: THREE.Vector3 = new THREE.Vector3() ) {
@@ -173,7 +244,7 @@ export default function PlayerCharacter(props: PropsType) {
 
         if ( performance.now() - lastUpdateTime > updateRate ) {
             lastUpdateTime = performance.now()
-            props.updateCallback()
+            updatePlayer( characterRef.current!, player, setPosition )
         }
     } )
 
@@ -189,20 +260,27 @@ export default function PlayerCharacter(props: PropsType) {
 
     
     return (
-        <group ref={characterRef} position={props.position} rotation={props.rotation}>
-            <primitive object={clonedInstance} />
-            <Text
-                ref={nameTagRef}
-                position={[0, 2, 0]}
-                fontSize={0.15}
-                color="white"
-                anchorX="center"
-                anchorY="bottom"
-                outlineWidth={0.01}
-                outlineColor="black"
-            >
-                {props.name ?? 'unknown'}
-            </Text>
-        </group>
+        player ? (
+            <group ref={characterRef} position={player.position} rotation={player.rotation}>
+                <primitive object={clonedInstance} />
+                <Text
+                    ref={nameTagRef}
+                    position={[0, 2, 0]}
+                    fontSize={0.15}
+                    color="white"
+                    anchorX="center"
+                    anchorY="bottom"
+                    outlineWidth={0.01}
+                    outlineColor="black"
+                >
+                    {player.name ?? 'unknown'}
+                </Text>
+            </group>
+        ) : (
+            <group position={[0, 0, 0]}>
+                <boxGeometry args={[1, 1, 1]} />
+                <meshStandardMaterial color="blue" />
+            </group>
+        )
     )
 }

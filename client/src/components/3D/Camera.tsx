@@ -17,6 +17,7 @@ export default function Camera( { targetRef } : PropsType ) {
     const minDistance = 5
     const maxDistance = 15
 
+
     useEffect( () => {
         const handleWheel = ( e: WheelEvent ) => {
             setDistance( (prev) =>

@@ -40,8 +40,8 @@ export function setPlayerList( payload: ResponsePlayerListGetPayloadType ) {
 
     if ( !isEqual( currentList, newList ) ) {
         usePlayersStore.getState().setPlayerList( newList )
-        console.log( "Playerlist updated." )
+        // console.log( "Playerlist updated." )
     } else {
-        console.log( "Playerlist update avoided.")
+        // console.log( "Playerlist update avoided.")
     }
 }
