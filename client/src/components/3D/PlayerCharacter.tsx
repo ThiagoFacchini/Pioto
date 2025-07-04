@@ -15,13 +15,21 @@ import { usePlayersStore } from '../../stores/PlayersStore'
 import { useWebSocketStore } from '../../stores/WebsocketStore'
 
 
+import { PlayerType } from './../../../../shared/playerType'
+
+
 // ==================================================================================================================================
 // [ ENTITY CONFIGURAATION ]
 // ==================================================================================================================================
 // Defines which keys will have a rection on this entity
 type ControlKeys = 'forward' | 'backward' | 'left' | 'right' | 'jump'
+
+
 // Defines how often it sends updates to the server
 const updateRate = 100 // ms
+
+// Define the size of the character which is use to compute collision and collision boxes
+const characterSize = new THREE.Vector3( 0.8, 1.7, 0.8 )
 // ==================================================================================================================================
 
 
@@ -64,50 +72,16 @@ const updatePlayer = function ( character: THREE.Group, playerData: any, setPosi
 // ==================================================================================================================================
 
 
-type PropsType = {
+type PlayerCharacterType = {
     forwardedRef: RefObject<THREE.Object3D | null>,
 }
 
-export default function PlayerCharacter(props: PropsType) {
-    const serverAddress = useConfigsStore( ( state ) => state.serverAddress )
-
-    const shouldShowCollisions = useDebugStore( ( state ) => state.showCollisions )
-    const setPosition = useDebugStore( ( state ) => state.setPosition )
-
+export default function PlayerCharacter( props: PlayerCharacterType ) {
     const player = usePlayersStore( ( state ) => state.player )
-
     const connectionId = useWebSocketStore( ( state ) => state.connectionId )
-
-    
-    let gltf = useGLTF(`http://${serverAddress}:8081/models/BaseCharacter-v2.glb`)
     
 
-    const clonedInstance = useMemo(() => {
-        const instance = clone( gltf.scene )
-        instance.position.set( 0, 0, 0 )
-        instance.rotation.set( 0, 0, 0 )
-        return instance
-    }, [gltf.scene] )
-
-    
-    const characterRef = useRef<THREE.Group>( null )
-    const nameTagRef = useRef<THREE.Object3D>( null )
-    const collisionBoxRef = useRef (new THREE.Box3() )
-    const boxHelperRef = useRef<THREE.Box3Helper>( null )
-    const isMovingRef = useRef( false )
-
-    const { actions } = useAnimations( gltf.animations, clonedInstance )
-
-    const forward = useKeyboardControls<ControlKeys>( ( state ) => state.forward )
-    const backward = useKeyboardControls<ControlKeys>( ( state ) => state.backward )
-    const left = useKeyboardControls<ControlKeys>( ( state ) => state.left )
-    const right = useKeyboardControls<ControlKeys>( ( state ) => state.right )
-
-    let lastUpdateTime = 0
-    const characterSize = new THREE.Vector3( 0.8, 1.7, 0.8 )
-
-
-    // 1 - Send request to get player information
+    // Request PlayerCharacter data
     useEffect( () => {
         if ( player === null ) {
             sendRequest( {
@@ -120,53 +94,97 @@ export default function PlayerCharacter(props: PropsType) {
     }, [ player ])
 
 
-    // 2 - With the player information the characterRef assigned, sets prop.forwardRef (Map.tsx)
+    if ( !player ) return null
+
+    return <GTLFPlayerCharacter playerData={ player } {...props } />
+}
+
+
+type GTLFPlayerCharacterType = {
+    playerData: PlayerType,
+    forwardedRef: RefObject<THREE.Object3D | null>
+}
+
+function GTLFPlayerCharacter(props: GTLFPlayerCharacterType) {
+    
+    // State Selectors from Stores
+    const serverAddress = useConfigsStore( ( state ) => state.serverAddress )                       // Get server IP from ConfigsStore
+    const shouldShowCollisions = useDebugStore( ( state ) => state.showCollisions )                 // Debug show / hide Colissions toggle
+    const setPosition = useDebugStore( ( state ) => state.setPosition )                             // Debug position setter
+
+    const characterRef = useRef<THREE.Group>( null )                                                // Reference to the group where character & nameTag will be
+    const nameTagRef = useRef<THREE.Object3D>( null )                                               // Reference to the character nameTag
+    const collisionBoxRef = useRef (new THREE.Box3() )                                              // Collision Box
+    const collisionBoxHelperRef = useRef<THREE.Box3Helper>( null )                                  // Collision Box Helper (debug purposes)
+    const isMovingRef = useRef( false )                                                             // Tracker for Character Movement
+
+    const forward = useKeyboardControls<ControlKeys>( ( state ) => state.forward )                  
+    const backward = useKeyboardControls<ControlKeys>( ( state ) => state.backward )
+    const left = useKeyboardControls<ControlKeys>( ( state ) => state.left )
+    const right = useKeyboardControls<ControlKeys>( ( state ) => state.right )
+
+    let lastUpdateTime = 0                                                                          // Used to throttle Character updates to server
+
+    // Load model oly after player data is available
+    let gltf = useGLTF(`http://${serverAddress}:8081/models/${props.playerData.meshName}`)
+    
+    // Clone the scene ( mesh ) to make it safe for use
+    const clonedInstance = useMemo(() => {
+        const instance = clone( gltf.scene )
+        instance.position.set( 0, 0, 0 )
+        instance.rotation.set( 0, 0, 0 )
+        return instance
+    }, [gltf.scene] )
+
+    // Animation actions
+    const { actions } = useAnimations( gltf.animations, clonedInstance )
+
+    // Assign the forwardedRef ( from parent ) to Character and set inital animation
     useEffect( () => {
-        if ( props.forwardedRef && characterRef.current && player !== null) {
+        if ( props.forwardedRef && characterRef.current ) {
             props.forwardedRef.current = characterRef.current
             characterRef.current.userData.currentAnimation = 'Idle'
         }
-    }, [ props.forwardedRef, player ] )
+    }, [ props.forwardedRef ] )
 
 
-    // Put the player character into IDLE animation
+    // Set the Character to start on IDLE animation
     useEffect( () => {
         actions['Idle']?.reset().fadeIn( 0.2 ).play()
     }, [ actions ] )
 
 
+    // Creates the collisionBoxHelper and assigned characterRef as its parent
     useEffect( () => {
         const helper = new THREE.Box3Helper( collisionBoxRef.current, "red" )
+        collisionBoxRef.current.copy( computeCollisionBox( characterRef.current!.position ) )
 
-        if ( characterRef.current ) {
-            console.log('there is a characterRef.current')
-            collisionBoxRef.current.copy( computeCollisionBox( characterRef.current.position ) )
-
-            boxHelperRef.current = helper
-            characterRef.current?.parent?.add( helper )
-        }
+        collisionBoxHelperRef.current = helper
+        collisionBoxHelperRef.current.visible = shouldShowCollisions
+        characterRef.current?.parent?.add( helper )
 
         return () => {
             characterRef.current?.parent?.remove( helper )
         }
-    }, [ player ])
+    }, [])
 
 
-    // Show or hide the collision helper based on DebugStore flags
+    // Show or hide the collision helper based on show / hide Collisions toggle (debugStore)
     useEffect( () => {
-        if ( boxHelperRef.current ) {
-            boxHelperRef.current.visible = shouldShowCollisions
+        if ( collisionBoxHelperRef.current ) {
+            collisionBoxHelperRef.current.visible = shouldShowCollisions
         }
     }, [ shouldShowCollisions ] )
 
 
-
+    // Computes a box centered on character position (optionally offset)
     function computeCollisionBox( basePos: THREE.Vector3, offset: THREE.Vector3 = new THREE.Vector3() ) {
         const center = basePos.clone().add( new THREE.Vector3(0, characterSize.y / 2, 0 ) ).add( offset )
         return new THREE.Box3().setFromCenterAndSize( center, characterSize )
     }
 
 
+    // Normalise the input direction
     function getDirection() {
         const dir = { x: 0, z: 0 }
         if ( forward ) dir.z -= 1
@@ -176,7 +194,7 @@ export default function PlayerCharacter(props: PropsType) {
         return dir
     }
 
-
+    // Swap animation baed on movement state
     function updateAnimationState( isMoving: boolean ) {
         if ( isMoving !== isMovingRef.current ) {
             isMovingRef.current = isMoving
@@ -194,13 +212,14 @@ export default function PlayerCharacter(props: PropsType) {
     }
 
 
+    // Detects intersection between character and static objects ( with colliders )
     function checkCollisions( moveVec: THREE.Vector3 ): boolean {
         if ( !characterRef.current ) return true
         
         const collisionBox = computeCollisionBox( characterRef.current.position, moveVec )
 
         collisionBoxRef.current.copy( collisionBox )
-        boxHelperRef.current?.updateMatrixWorld( true )
+        collisionBoxHelperRef.current?.updateMatrixWorld( true )
 
         let collided = false
         LAYER_COLLISION.traverse( ( obj ) => {
@@ -235,6 +254,7 @@ export default function PlayerCharacter(props: PropsType) {
             characterRef.current.updateMatrixWorld( true )
 
             const moveVec = new THREE.Vector3( dir.x * speed * delta, 0, dir.z * speed * delta )
+
             if ( !checkCollisions( moveVec ) ) {
                 characterRef.current.position.add( moveVec )
                 const angle = Math.atan2( dir.x, dir.z )
@@ -242,16 +262,17 @@ export default function PlayerCharacter(props: PropsType) {
             }
         }
 
+        // Throttled server update
         if ( performance.now() - lastUpdateTime > updateRate ) {
             lastUpdateTime = performance.now()
-            updatePlayer( characterRef.current!, player, setPosition )
+            updatePlayer( characterRef.current!, props.playerData, setPosition )
         }
     } )
 
 
 
 
-    // Positioning nameTag
+    // Make the nameTag always face player camera
     useFrame( ( { camera } ) => {
         if ( characterRef.current && nameTagRef.current ) {
             nameTagRef.current.lookAt( camera.position )
@@ -260,27 +281,20 @@ export default function PlayerCharacter(props: PropsType) {
 
     
     return (
-        player ? (
-            <group ref={characterRef} position={player.position} rotation={player.rotation}>
-                <primitive object={clonedInstance} />
-                <Text
-                    ref={nameTagRef}
-                    position={[0, 2, 0]}
-                    fontSize={0.15}
-                    color="white"
-                    anchorX="center"
-                    anchorY="bottom"
-                    outlineWidth={0.01}
-                    outlineColor="black"
-                >
-                    {player.name ?? 'unknown'}
-                </Text>
-            </group>
-        ) : (
-            <group position={[0, 0, 0]}>
-                <boxGeometry args={[1, 1, 1]} />
-                <meshStandardMaterial color="blue" />
-            </group>
-        )
+        <group ref={ characterRef } position={props.playerData.position} rotation={props.playerData.rotation}>
+            <primitive object={ clonedInstance } />
+            <Text
+                ref={nameTagRef}
+                position={[0, 2, 0]}
+                fontSize={0.15}
+                color="white"
+                anchorX="center"
+                anchorY="bottom"
+                outlineWidth={0.01}
+                outlineColor="black"
+            >
+                {props.playerData.name ?? 'unknown'}
+            </Text>
+        </group>
     )
 }
