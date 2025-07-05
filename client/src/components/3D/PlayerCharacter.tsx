@@ -130,7 +130,7 @@ type RequestResourceType = {
 const MIN_DISTANCE = 1
 const lastRequestPosition = new THREE.Vector3(Infinity, Infinity, Infinity )
 
-// Function used to request an updated resource list to the server
+// Function used to request an updated resource list from the server
 function requestResources( props: RequestResourceType ) {
 
     const currentPosition = new THREE.Vector3( ...props.playerData.position )
@@ -144,6 +144,17 @@ function requestResources( props: RequestResourceType ) {
         } )
     }
 
+}
+
+
+type RequestPlayersType = {}
+
+// Function used to request an updates player list from the server
+function requestPlayers() {
+    sendRequest( {
+        header: 'REQ_PLAYERLIST_GET',
+        payload: null
+    })
 }
 // ==================================================================================================================================
 
@@ -340,7 +351,7 @@ function GLTFPlayer(props: GLTFPlayerType) {
             }
         }
 
-        // Throttled server update
+        // Throttled update requests
         if ( performance.now() - lastUpdateTime > updateRate ) {
             lastUpdateTime = performance.now()
             updatePlayer( characterRef.current!, props.playerData, setPosition )
@@ -350,6 +361,7 @@ function GLTFPlayer(props: GLTFPlayerType) {
                 position: characterRef!.current!.position.toArray()
             }
             requestResources( { playerData: updatedPlayerData } )
+            requestPlayers()
         }
     } )
 

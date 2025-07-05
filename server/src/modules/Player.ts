@@ -169,23 +169,45 @@ function requestPlayerUpdate ( request: RequestPayloadType, socket: WebSocket, s
     if ( playerIndex !== false ) {
         Players[ playerIndex ] = request
 
-        let broadcastResponse: ResponseType = {
-            header: 'RES_PLAYERLIST_GET',
-            payload: {
-                playerList: Players
-            }
-        }
+        // let broadcastResponse: ResponseType = {
+        //     header: 'RES_PLAYERLIST_GET',
+        //     payload: {
+        //         playerList: Players
+        //     }
+        // }
 
-        serverBroadcast( broadcastResponse )
+        // serverBroadcast( broadcastResponse )
     }
 }
 
 
 function requestPlayerListGet( request: RequestPayloadType, socket: WebSocket, socketServer: WebSocketServer ) {
+    const player = Players.find( player => player.connectionId === socket.connectionId! )
+    
+    if ( !player ) return
+
+    const [ boxWidth, boxDepth ] = player.renderBox
+    const halfWidth = boxWidth / 2
+    const halfDepth = boxDepth / 2
+
+    const playerPosition = player.position
+    const px = playerPosition[ 0 ]
+    const pz = playerPosition[ 2 ]
+
+    const filteredPlayers = Players.filter( player => {
+        const [rx, ry, rz] = player.position
+        return ( 
+            rx >= px - halfWidth && 
+            rx <= px + halfWidth &&
+            rz >= pz - halfDepth &&
+            rz <= pz + halfDepth
+        )
+    } )
+
     const response: ResponseType = {
         header: 'RES_PLAYERLIST_GET',
         payload: {
-            playerList: Players
+            playerList: filteredPlayers
         }
     }
     

@@ -71,8 +71,6 @@ function requestMapResourcesGet( request: RequestPayloadType, socket: WebSocket,
         )
     } )
 
-    console.log( `${player?.name} requested map resources`)
-
     const response: ResponseType = {
         header: 'RES_MAP_RESOURCES_GET',
         payload: {
