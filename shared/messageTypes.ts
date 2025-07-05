@@ -1,5 +1,5 @@
 // @ts-ignore
-import { Player } from './playerType.ts'
+import { PlayerType } from './playerType.ts'
 // @ts-ignore
 import { Resource } from './resourceType.ts'
 
@@ -20,7 +20,7 @@ export type RequestAuthenticatePayloadType = { username: string, password: strin
 export type RequestCharacterSelectPayloadType = { characterName: string }
 export type RequestPlayerGetPayloadType = { cid: string }
 export type RequestPlayerListGetPayloadType = null
-export type RequestPlayerUpdatePayloadType = Player
+export type RequestPlayerUpdatePayloadType = { player: PlayerType, callerId: string }
 export type RequestPingPayloadType = null
 export type RequestMapResourcesGetPayloadType = null
 export type RequestMapResourceUpdatePayloadType = { resource: Resource }
@@ -52,8 +52,8 @@ export type ResponseHeaderType =
 export type ResponseConnectionIdPayloadType = { cid: string }
 export type ResponseAuthenticatePayloadType = { characters: string[] }
 export type ResponseCharacterSelectPayloadType = null
-export type ResponsePlayerGetPayloadType = { player: Player }
-export type ResponsePlayerListGetPayloadType = { playerList: Array<Player> }
+export type ResponsePlayerGetPayloadType = { player: PlayerType }
+export type ResponsePlayerListGetPayloadType = { playerList: Array<PlayerType> }
 export type ResponseCharacterListPayloadType = { username: string, charactersList: Array<string> }
 export type ResponsePongPayloadType = null
 export type ResponseMapResourcesGetPayloadType = { resources: Array<Resource> }

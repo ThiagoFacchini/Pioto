@@ -11,7 +11,7 @@ import { sendRequest } from "../../websocket/WsClient"
 
 import { useDebugStore } from '../../stores/DebugStore'
 import { useConfigsStore } from '../../stores/ConfigsStore'
-import { usePlayersStore } from '../../stores/PlayersStore'
+import { usePlayersStore, getPlayerByConnectionId } from '../../stores/PlayersStore'
 import { useWebSocketStore } from '../../stores/WebsocketStore'
 
 
@@ -26,7 +26,7 @@ type ControlKeys = 'forward' | 'backward' | 'left' | 'right' | 'jump'
 
 
 // Defines how often it sends updates to the server
-const updateRate = 100 // ms
+const updateRate = 1000 // ms
 
 // Define the size of the character which is use to compute collision and collision boxes
 const characterSize = new THREE.Vector3( 0.8, 1.7, 0.8 )
@@ -43,21 +43,25 @@ const characterSize = new THREE.Vector3( 0.8, 1.7, 0.8 )
 const updatePlayer = function ( character: THREE.Group, playerData: any, setPosition: ( position: [ number, number, number ] ) => void ) {
     
     if ( character != null ) {
+        console.log ( "updatePlayer - renderBox: ", playerData.renderBox)
         sendRequest( {
             header: 'REQ_PLAYER_UPDATE',
             payload: { 
-                ...playerData,
-                animationName: character.userData.currentAnimation,
-                position: [
-                    character.position.x,
-                    character.position.y,
-                    character.position.z
-                ],
-                rotation: [
-                    character.rotation.x,
-                    character.rotation.y,
-                    character.rotation.z
-                ]
+                player: {
+                    ...playerData,
+                    animationName: character.userData.currentAnimation,
+                    position: [
+                        character.position.x,
+                        character.position.y,
+                        character.position.z
+                    ],
+                    rotation: [
+                        character.rotation.x,
+                        character.rotation.y,
+                        character.rotation.z
+                    ]
+                },
+                callerId: 'PlayerCharacter.tsx - updatePlayer'
             }
         })
 
@@ -73,6 +77,7 @@ const updatePlayer = function ( character: THREE.Group, playerData: any, setPosi
 
 type RenderBoxType = {
     size: [ number, number ],
+    shouldDisplay?: boolean,
     height?: number,
     color?: string,
     opacity?: number
@@ -81,6 +86,7 @@ type RenderBoxType = {
 // Creates a helper renderBox around the player, this renderBox represents everything the player can see and it's tighted with
 // the serverResponse. e.g: the server will only send what the client can see.
 function CreateRenderBox ( props: RenderBoxType ) {
+    const shouldDisplay = props.shouldDisplay || false
     const [ width, depth ] = props.size
     const height = props.height || 3
     const color = props.color || "lightblue"
@@ -106,7 +112,7 @@ function CreateRenderBox ( props: RenderBoxType ) {
     
     
     return (
-        <group>
+        <group visible={ shouldDisplay }>
             {/* Front wall */}
             { createWall( [ 0, midHeight, -halfDepth ], [ 0, 0, 0 ], [ width, height ] ) }
 
@@ -164,13 +170,12 @@ type PlayerCharacterType = {
     forwardedRef: RefObject<THREE.Object3D | null>,
 }
 
-//  This functions be sure that all the Player Data gets properly loaded.
+//  This function makes sure that all the Player Data gets properly loaded.
 export default function PlayerCharacter( props: PlayerCharacterType ) {
-    const player = usePlayersStore( ( state ) => state.player )
     const connectionId = useWebSocketStore( ( state ) => state.connectionId )
-    
+    const player = usePlayersStore(( state ) =>  state.playerList?.find( p => p.connectionId === connectionId ) || null )
 
-    // Request PlayerCharacter data
+    console.log(player.renderBox)
     useEffect( () => {
         if ( player === null ) {
             sendRequest( {
@@ -198,7 +203,8 @@ function GLTFPlayer(props: GLTFPlayerType) {
     
     // State Selectors from Stores
     const serverAddress = useConfigsStore( ( state ) => state.serverAddress )                       // Get server IP from ConfigsStore
-    const shouldShowCollisions = useDebugStore( ( state ) => state.showCollisions )                 // Debug show / hide Colissions toggle
+    const shouldShowCollisions = useDebugStore( ( state ) => state.showCollisions )                 // Debug show / hide Colissions
+    const shouldShowRenderBox = useDebugStore( ( state ) => state.showRenderBox  )                  // Debug show / hide RenderBox
     const setPosition = useDebugStore( ( state ) => state.setPosition )                             // Debug position setter
 
     const characterRef = useRef<THREE.Group>( null )                                                // Reference to the group where character & nameTag will be
@@ -391,7 +397,7 @@ function GLTFPlayer(props: GLTFPlayerType) {
             >
                 {props.playerData.name ?? 'unknown'}
             </Text>
-            <CreateRenderBox size={ props.playerData.renderBox } />
+            <CreateRenderBox size={ props.playerData.renderBox } shouldDisplay={ shouldShowRenderBox } />
         </group>
     )
 }

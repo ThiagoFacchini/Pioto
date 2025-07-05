@@ -35,7 +35,14 @@
         }
     }
 
-    & .collisionToggleContainer {
+    & .toggleContainer {
+        display: flex;
+        flex-direction: row;
+        gap: 5px;
+        align-items: center;
+    }
+
+    & .sliderContainer {
         display: flex;
         flex-direction: row;
         gap: 5px;

@@ -195,8 +195,9 @@ function Login() {
     
     return (
         <>
-        <div> Home </div>
-        { getViewComponents() }
+        <div>
+            { getViewComponents() }
+        </div>
         </>
     )
 }

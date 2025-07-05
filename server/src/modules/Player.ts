@@ -120,11 +120,12 @@ function requestConnectionId ( request: RequestPayloadType, socket: WebSocket, s
 
 
 function requestCharacterSelect( request: RequestPayloadType, socket: WebSocket, socketServer: WebSocketServer ) {
+    console.log( request )
     const playerIndex = findPlayerIndexByConnectionID( socket.connectionId! )
 
     if ( playerIndex !== false ) {
-        Players[ playerIndex ].name = request.characterName
-        console.log( `Character: ${request.characterName} selected for account ${Players[ playerIndex ].username} (${socket.connectionId})` )
+        Players[ playerIndex ].name = request!.characterName
+        console.log( `Character: ${request!.characterName} selected for account ${Players[ playerIndex ].username} (${socket.connectionId})` )
 
         const response: ResponseType = {
             header: 'RES_CHARACTER_SELECT',
@@ -164,19 +165,12 @@ function requestPlayerGet ( request: RequestPayloadType, socket: WebSocket, sock
 
 
 function requestPlayerUpdate ( request: RequestPayloadType, socket: WebSocket, socketServer: WebSocketServer ) {
-    const playerIndex = findPlayerIndexByConnectionID( request.connectionId )
+    const playerIndex = findPlayerIndexByConnectionID( request.player.connectionId )
 
     if ( playerIndex !== false ) {
-        Players[ playerIndex ] = request
-
-        // let broadcastResponse: ResponseType = {
-        //     header: 'RES_PLAYERLIST_GET',
-        //     payload: {
-        //         playerList: Players
-        //     }
-        // }
-
-        // serverBroadcast( broadcastResponse )
+        Players[ playerIndex ] = request.player
+        
+        console.log( `CallerId: ${request.callerId} - renderBox: ${Players[ playerIndex ].renderBox}` )
     }
 }
 

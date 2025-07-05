@@ -7,32 +7,44 @@ import type { ResponsePlayerGetPayloadType, ResponsePlayerListGetPayloadType, Re
 
 
 type PlayerStoreType = {
-    player: PlayerType | null,
     playerList: PlayerType[] | null,
-    setPlayer: ( player: PlayerType ) => void,
     setPlayerList: ( players: PlayerType[] ) => void,
     clearStore: () => void
 }
 
 // @ts-ignore
 export const usePlayersStore = create<PlayerStoreType>( devtools( ( set ) => ( {
-    player: null,
+    // player: null,
     playerList: null,
-    setPlayer: ( player ) => set( { player: player } ),
+    // setPlayer: ( player ) => set( { player: player } ),
     setPlayerList: ( players ) => set( { playerList: players }),
     clearStore: () => {
         console.log( "Clearing PlayersStore..." )
         set({
-            player: null,
             playerList: null
         })
     }
 } ), { name: 'PlayerStore' } ) )
 
 
-export function setPlayer( payload: ResponsePlayerGetPayloadType ) {
-    usePlayersStore.getState().setPlayer( payload.player )
+// TO be removed
+export function getPlayerByConnectionId ( connectionId: string ): PlayerType | null {
+    const list = usePlayersStore.getState().playerList
+    if ( !list ) return null
+    return list.find( player => player.connectionId === connectionId ) || null
 }
+
+
+export function updatePlayerByConnectionId( connectionId: string, updatedPlayer: Partial<PlayerType> ): void {
+    const list = usePlayersStore.getState().playerList
+
+    if ( !list ) return
+
+    const updatedList = list.map( player => player.connectionId === connectionId ? { ...player, ...updatedPlayer } : player )
+
+    usePlayersStore.getState().setPlayerList( updatedList )
+}
+
 
 export function setPlayerList( payload: ResponsePlayerListGetPayloadType ) {
     const currentList = usePlayersStore.getState().playerList

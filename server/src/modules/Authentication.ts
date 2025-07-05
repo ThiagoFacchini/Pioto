@@ -19,10 +19,10 @@ export function authenticate( request: RequestPayloadType, socket: WebSocket, so
 
      
         const updatedPlayer: PlayerType = {
-            ...player, username: request.username!
+            ...player, username: request!.username!
         }
 
-        Player.requestPlayerUpdate( updatedPlayer, socket, socketServer )
+        Player.requestPlayerUpdate( { player: updatedPlayer, callerId: 'Server - Authenticate' }, socket, socketServer )
         
         const charList = getCharacterList()
 
