@@ -9,5 +9,6 @@ export type PlayerType = {
     meshName: string,
     animationName: AnimationNameType,
     position: [ number, number, number ],
-    rotation: [ number, number, number ]
+    rotation: [ number, number, number ],
+    renderBox: [ number, number ]
 }

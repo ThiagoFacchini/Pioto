@@ -8,7 +8,7 @@ import type { PlayerType, ConnectionIdType } from '../../../shared/playerType.ts
 import { RequestPayloadType, ResponseType } from './../../../shared/messageTypes.ts'
 
 
-const Players: Array<PlayerType> = []
+import { Players } from './../gameState.ts'
 
 
 
@@ -77,7 +77,8 @@ function requestAddPlayer ( cid: ConnectionIdType ) {
                 animationName: 'Idle',
                 meshName: 'BaseCharacter-v2.glb',
                 position: [ 0, 0, 0 ],
-                rotation: [ 0, 0, 0 ]
+                rotation: [ 0, 0, 0 ],
+                renderBox: [ 20, 20 ]
             } 
         )
         console.log( `Player ${cid} added!` )

@@ -73,7 +73,7 @@ function Map() {
                         <SunLight />
 
                         <mesh rotation={ [-Math.PI / 2, 0, 0] } receiveShadow>
-                            <planeGeometry args={ [20, 20] } />
+                            <planeGeometry args={ [60, 60] } />
                             <meshStandardMaterial color="green" />
                         </mesh>
 

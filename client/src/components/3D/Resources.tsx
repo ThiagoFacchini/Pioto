@@ -13,8 +13,6 @@ export default function Resources() {
      // Load resources
      useEffect( () => {
          if ( resources == null ) {
-             console.log( 'Requesting Resources...' )
- 
              sendRequest( {
                  header: 'REQ_MAP_RESOURCES_GET',
                  payload: null

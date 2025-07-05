@@ -69,13 +69,91 @@ const updatePlayer = function ( character: THREE.Group, playerData: any, setPosi
         ] )
     }
 }
+
+
+type RenderBoxType = {
+    size: [ number, number ],
+    height?: number,
+    color?: string,
+    opacity?: number
+}
+
+// Creates a helper renderBox around the player, this renderBox represents everything the player can see and it's tighted with
+// the serverResponse. e.g: the server will only send what the client can see.
+function CreateRenderBox ( props: RenderBoxType ) {
+    const [ width, depth ] = props.size
+    const height = props.height || 3
+    const color = props.color || "lightblue"
+    const opacity = props.opacity || 0.2
+    const halfWidth = width / 2
+    const halfDepth = depth / 2
+    const midHeight = height / 2
+    
+    const createWall = ( position: [ number, number, number ], rotation: [ number, number, number ], size: [ number, number ] ) => {
+        const geometry = new THREE.PlaneGeometry( size[ 0 ], size[ 1 ] )
+        const material = new THREE.MeshBasicMaterial( { color, transparent: true, opacity, side: THREE.DoubleSide } )
+        
+        const edgeGeometry = new THREE.EdgesGeometry( geometry )
+        const edgeMaterial = new THREE.LineBasicMaterial( { color: "blue" } )
+        
+        return (
+            <group position={ position } rotation={ rotation } >
+                <mesh geometry={ geometry } material={ material } />
+                <lineSegments geometry={ edgeGeometry } material={ edgeMaterial } />
+            </group>
+        )
+    }
+    
+    
+    return (
+        <group>
+            {/* Front wall */}
+            { createWall( [ 0, midHeight, -halfDepth ], [ 0, 0, 0 ], [ width, height ] ) }
+
+            {/* Back wall */}
+            { createWall( [ 0, midHeight, halfDepth ], [ 0, Math.PI, 0 ], [ width, height ] ) }
+
+            {/* Left wall */}
+            { createWall( [ -halfWidth, midHeight, 0 ], [ 0, Math.PI / 2, 0 ], [ depth, height ] ) }
+
+            {/* Right wall */}
+            { createWall( [ halfWidth, midHeight, 0 ], [ 0, -Math.PI / 2, 0 ], [ depth, height ] ) }
+        </group>
+    )
+}
+
+
+type RequestResourceType = {
+    playerData: PlayerType
+}
+
+const MIN_DISTANCE = 1
+const lastRequestPosition = new THREE.Vector3(Infinity, Infinity, Infinity )
+
+// Function used to request an updated resource list to the server
+function requestResources( props: RequestResourceType ) {
+
+    const currentPosition = new THREE.Vector3( ...props.playerData.position )
+
+    if ( currentPosition.distanceTo( lastRequestPosition ) >= MIN_DISTANCE ) {
+        lastRequestPosition.copy( currentPosition )
+
+        sendRequest( {
+            header: 'REQ_MAP_RESOURCES_GET',
+            payload: null
+        } )
+    }
+
+}
 // ==================================================================================================================================
+
 
 
 type PlayerCharacterType = {
     forwardedRef: RefObject<THREE.Object3D | null>,
 }
 
+//  This functions be sure that all the Player Data gets properly loaded.
 export default function PlayerCharacter( props: PlayerCharacterType ) {
     const player = usePlayersStore( ( state ) => state.player )
     const connectionId = useWebSocketStore( ( state ) => state.connectionId )
@@ -96,16 +174,16 @@ export default function PlayerCharacter( props: PlayerCharacterType ) {
 
     if ( !player ) return null
 
-    return <GTLFPlayerCharacter playerData={ player } {...props } />
+    return <GLTFPlayer playerData={ player } {...props } />
 }
 
 
-type GTLFPlayerCharacterType = {
+type GLTFPlayerType = {
     playerData: PlayerType,
     forwardedRef: RefObject<THREE.Object3D | null>
 }
 
-function GTLFPlayerCharacter(props: GTLFPlayerCharacterType) {
+function GLTFPlayer(props: GLTFPlayerType) {
     
     // State Selectors from Stores
     const serverAddress = useConfigsStore( ( state ) => state.serverAddress )                       // Get server IP from ConfigsStore
@@ -266,6 +344,12 @@ function GTLFPlayerCharacter(props: GTLFPlayerCharacterType) {
         if ( performance.now() - lastUpdateTime > updateRate ) {
             lastUpdateTime = performance.now()
             updatePlayer( characterRef.current!, props.playerData, setPosition )
+            
+            const updatedPlayerData = {
+                ...props.playerData,
+                position: characterRef!.current!.position.toArray()
+            }
+            requestResources( { playerData: updatedPlayerData } )
         }
     } )
 
@@ -295,6 +379,7 @@ function GTLFPlayerCharacter(props: GTLFPlayerCharacterType) {
             >
                 {props.playerData.name ?? 'unknown'}
             </Text>
+            <CreateRenderBox size={ props.playerData.renderBox } />
         </group>
     )
 }

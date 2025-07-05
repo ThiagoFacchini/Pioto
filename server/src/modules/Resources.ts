@@ -4,25 +4,7 @@ import { serverBroadcast } from './Broadcast.ts'
 import type { Resource } from '../../../shared/resourceType.ts'
 import type { RequestPayloadType, ResponseType } from './../../../shared/messageTypes.ts'
 
-
-const Resources: Array<Resource> = [
-        {
-            id: '1',
-            type: "rock",
-            meshFile: "rock 1.glb",
-            position: [ 3, -0.2, 3 ],
-            size: [ 0.86, 0.98, 0.91 ],
-            collidable: true
-        },
-        {
-            id: '2',
-            type: "rock",
-            meshFile: "rock 1.glb",
-            position: [ 6, -0.4, 8 ],
-            size: [ 0.86, 0.98, 0.91 ],
-            collidable: false
-        },
-]
+import { Resources, Players } from './../gameState.ts'
 
 
 
@@ -66,10 +48,35 @@ function requestMapResourceUpdate ( request: RequestPayloadType, socket: WebSock
 
 
 function requestMapResourcesGet( request: RequestPayloadType, socket: WebSocket, socketServer: WebSocketServer ) {
+
+    const player = Players.find( player => player.connectionId === socket.connectionId! )
+    
+    if ( !player ) return
+
+    const [ boxWidth, boxDepth ] = player.renderBox
+    const halfWidth = boxWidth / 2
+    const halfDepth = boxDepth / 2
+
+    const playerPosition = player.position
+    const px = playerPosition[ 0 ]
+    const pz = playerPosition[ 2 ]
+
+    const filteredResources = Resources.filter( resource => {
+        const [rx, ry, rz] = resource.position
+        return ( 
+            rx >= px - halfWidth && 
+            rx <= px + halfWidth &&
+            rz >= pz - halfDepth &&
+            rz <= pz + halfDepth
+        )
+    } )
+
+    console.log( `${player?.name} requested map resources`)
+
     const response: ResponseType = {
         header: 'RES_MAP_RESOURCES_GET',
         payload: {
-            resources: Resources
+            resources: filteredResources
         }
     }
     

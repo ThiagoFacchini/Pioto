@@ -4,7 +4,7 @@ import { Resource } from '../../../shared/resourceType'
 import { ResponseMapResourcesGetPayloadType } from '../../../shared/messageTypes'
 
 type ResourcesStoreType = {
-  resources: Array< Resource >,
+  resources: Array< Resource> | null,
   areResourcesLoaded: boolean,
   setResources: ( serverResources: Array<Resource> ) => void,
   setAreResourcesLoaded: ( isLoaded: boolean ) => void
@@ -12,7 +12,7 @@ type ResourcesStoreType = {
 
 
 export const useResourcesStore = create< ResourcesStoreType >( ( set ) => ( {
-  resources: [],
+  resources: null,
   areResourcesLoaded: false,
   setResources: ( serverResources: Array<Resource> ) => set( { resources: serverResources } ),
   setAreResourcesLoaded: ( isLoaded: boolean ) => set( { areResourcesLoaded: isLoaded } )
