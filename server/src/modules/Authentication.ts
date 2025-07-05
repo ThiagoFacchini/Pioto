@@ -2,12 +2,12 @@ import { WebSocket, WebSocketServer } from 'ws'
 
 import Player from './Player.ts'
 
-import { RequestPayloadType } from './../../../shared/messageTypes.ts'
+import { RequestPayloadMap } from './../../../shared/messageTypes.ts'
 import { PlayerType } from './../../../shared/playerType.ts'
 
 
 
-export function authenticate( request: RequestPayloadType, socket: WebSocket, socketServer: WebSocketServer ) {
+export function authenticate( request: RequestPayloadMap['REQ_AUTHENTICATE'], socket: WebSocket, socketServer: WebSocketServer ) {
     console.log( 'Trying to authenticate connectionId: ',  socket.connectionId! )
     const player = Player.getPlayerByConnectionId( socket.connectionId! )
     

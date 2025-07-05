@@ -17,15 +17,6 @@ import { Players } from './../gameState.ts'
 // ==================================================================================================================================
 // PRIVATE METHODS
 // ==================================================================================================================================
-function updatePlayer ( index: number, player: PlayerType ) {
-    if ( Players[ index ] ) {
-        Players[ index ] = player
-    } else {
-        console.log( `Player index ${index} not found.` )
-    }
-}
-
-
 function findPlayerIndexByConnectionID ( cid: ConnectionIdType ) {
     const index = Players.findIndex( player => player.connectionId === cid )
 
@@ -34,20 +25,6 @@ function findPlayerIndexByConnectionID ( cid: ConnectionIdType ) {
     } else {
         return false
     }
-}
-
-
-function getPlayerByIndex( index: number ) {
-    if ( Players[ index ] ) {
-        return Players[ index ] 
-    }
-
-    return false
-}
-
-
-function getPlayerCount () {
-    return Players.length
 }
 // ==================================================================================================================================
 
@@ -119,13 +96,11 @@ function requestConnectionId ( request: RequestPayloadType, socket: WebSocket, s
 }
 
 
-function requestCharacterSelect( request: RequestPayloadType, socket: WebSocket, socketServer: WebSocketServer ) {
-    console.log( request )
+function requestCharacterSelect( request: RequestPayloadType['RES_CHARACTER_SELECT'], socket: WebSocket, socketServer: WebSocketServer ) {
     const playerIndex = findPlayerIndexByConnectionID( socket.connectionId! )
 
     if ( playerIndex !== false ) {
         Players[ playerIndex ].name = request!.characterName
-        console.log( `Character: ${request!.characterName} selected for account ${Players[ playerIndex ].username} (${socket.connectionId})` )
 
         const response: ResponseType = {
             header: 'RES_CHARACTER_SELECT',
@@ -169,8 +144,6 @@ function requestPlayerUpdate ( request: RequestPayloadType, socket: WebSocket, s
 
     if ( playerIndex !== false ) {
         Players[ playerIndex ] = request.player
-        
-        console.log( `CallerId: ${request.callerId} - renderBox: ${Players[ playerIndex ].renderBox}` )
     }
 }
 

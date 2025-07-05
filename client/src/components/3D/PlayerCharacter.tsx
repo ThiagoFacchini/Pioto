@@ -43,7 +43,6 @@ const characterSize = new THREE.Vector3( 0.8, 1.7, 0.8 )
 const updatePlayer = function ( character: THREE.Group, playerData: any, setPosition: ( position: [ number, number, number ] ) => void ) {
     
     if ( character != null ) {
-        console.log ( "updatePlayer - renderBox: ", playerData.renderBox)
         sendRequest( {
             header: 'REQ_PLAYER_UPDATE',
             payload: { 
@@ -175,13 +174,12 @@ export default function PlayerCharacter( props: PlayerCharacterType ) {
     const connectionId = useWebSocketStore( ( state ) => state.connectionId )
     const player = usePlayersStore(( state ) =>  state.playerList?.find( p => p.connectionId === connectionId ) || null )
 
-    console.log(player.renderBox)
     useEffect( () => {
         if ( player === null ) {
-            sendRequest( {
+            sendRequest({
                 header: 'REQ_PLAYER_GET',
                 payload: {
-                    cid: connectionId
+                    cid: connectionId!
                 }
             } )
         }

@@ -2,7 +2,7 @@ import { WebSocket, WebSocketServer } from "ws";
 import { serverBroadcast } from './Broadcast.ts'
 
 import type { Resource } from '../../../shared/resourceType.ts'
-import type { RequestPayloadType, ResponseType } from './../../../shared/messageTypes.ts'
+import type { RequestPayloadMap, ResponseType } from './../../../shared/messageTypes.ts'
 
 import { Resources, Players } from './../gameState.ts'
 
@@ -26,7 +26,7 @@ function findResourceById ( rid: string ) {
 // ==================================================================================================================================
 // PUBLIC METHODS
 // ==================================================================================================================================
-function requestMapResourceUpdate ( request: RequestPayloadType, socket: WebSocket, socketServer: WebSocketServer ) {
+function requestMapResourceUpdate ( request: RequestPayloadMap['REQ_MAP_RESOURCE_UPDATE'], socket: WebSocket, socketServer: WebSocketServer ) {
     const resourceIndex = findResourceById( request.resource.id )
 
     
@@ -47,7 +47,7 @@ function requestMapResourceUpdate ( request: RequestPayloadType, socket: WebSock
 }
 
 
-function requestMapResourcesGet( request: RequestPayloadType, socket: WebSocket, socketServer: WebSocketServer ) {
+function requestMapResourcesGet( request: RequestPayloadMap['REQ_MAP_RESOURCES_GET'], socket: WebSocket, socketServer: WebSocketServer ) {
 
     const player = Players.find( player => player.connectionId === socket.connectionId! )
     

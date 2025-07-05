@@ -11,6 +11,8 @@ import { sendRequest } from '../../../websocket/WsClient'
 
 import SimpleSlider from './../SimpleSlider/SimpleSlider'
 
+import { PlayerType } from '../../../../../shared/playerType'
+
 // @ts-ignore
 import styles from './styles.module.css'
 // @ts-ignore
@@ -30,15 +32,9 @@ export default function UIHeader () {
     const latency = useDebugStore( ( state ) => state.latency )
     const position = useDebugStore( ( state ) => state.position )
 
-    const playerList = usePlayersStore( ( state ) => state.playerList  )
-    
-
     const playerData = usePlayersStore( ( state ) => connectionId ? state.playerList?.find( p => p.connectionId === connectionId ) || null : null )
     
-    // useEffect( () => {
-    //     console.log( "Player list updated, ", playerList )
-    // }, [playerList])
-
+ 
     function getConnectionStatus () {
         if ( isConnected ) {
             return (
@@ -76,9 +72,9 @@ export default function UIHeader () {
 
 
     function handleRenderBoxChange ( value: number ) {
-        if ( !connectionId || !playerList ) return
+        if ( !connectionId || !playerData || !playerData.connectionId) return
 
-        const updatedPlayer = { ...playerData, renderBox: [ value, value ] }
+        const updatedPlayer: PlayerType = { ...playerData, renderBox: [ value, value ] }
 
         sendRequest({
             header: 'REQ_PLAYER_UPDATE',
@@ -135,6 +131,9 @@ export default function UIHeader () {
                     onChange={ handleRenderBoxChange } 
                     isDisabled= { !playerData }
                 />
+                <div className={ classNames( [ uiStyles.label, uiStyles.xs ] ) }>
+                    { playerData?.renderBox?.[0] ?? "N/A" }
+                </div>
             </div>
 
             <div className={ uiStyles.separator } />

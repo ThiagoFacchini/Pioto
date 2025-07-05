@@ -4,51 +4,44 @@ import { PlayerType } from './playerType.ts'
 import { Resource } from './resourceType.ts'
 
 
-export type RequestHeaderType = 
-    'REQ_CONNECTION_ID' | 
-    'REQ_AUTHENTICATE' | 
-    'REQ_CHARACTER_SELECT' |
-    'REQ_PLAYER_GET' | 
-    'REQ_PLAYERLIST_GET' | 
-    'REQ_PLAYER_UPDATE' |
-    'REQ_PING' |
-    'REQ_MAP_RESOURCES_GET' |
-    'REQ_MAP_RESOURCE_UPDATE' 
+// ==================================================================================================================================
+// REQUESTS
+// ==================================================================================================================================
+type RequestConnectionIdPayloadType = null
+type RequestAuthenticatePayloadType = { username: string, password: string }
+type RequestCharacterSelectPayloadType = { characterName: string }
+type RequestPlayerGetPayloadType = { cid: string }
+type RequestPlayerListGetPayloadType = null
+type RequestPlayerUpdatePayloadType = { player: PlayerType, callerId: string }
+type RequestPingPayloadType = null
+type RequestMapResourcesGetPayloadType = null
+type RequestMapResourceUpdatePayloadType = { resource: Resource }
 
-export type RequestConnectionIdPayloadType = null
-export type RequestAuthenticatePayloadType = { username: string, password: string }
-export type RequestCharacterSelectPayloadType = { characterName: string }
-export type RequestPlayerGetPayloadType = { cid: string }
-export type RequestPlayerListGetPayloadType = null
-export type RequestPlayerUpdatePayloadType = { player: PlayerType, callerId: string }
-export type RequestPingPayloadType = null
-export type RequestMapResourcesGetPayloadType = null
-export type RequestMapResourceUpdatePayloadType = { resource: Resource }
+export type RequestPayloadMap = {
+    REQ_CONNECTION_ID : RequestConnectionIdPayloadType
+    REQ_AUTHENTICATE: RequestAuthenticatePayloadType
+    REQ_CHARACTER_SELECT: RequestCharacterSelectPayloadType
+    REQ_PLAYER_GET: RequestPlayerGetPayloadType
+    REQ_PLAYERLIST_GET: RequestPlayerListGetPayloadType
+    REQ_PLAYER_UPDATE: RequestPlayerUpdatePayloadType
+    REQ_PING: RequestPingPayloadType
+    REQ_MAP_RESOURCES_GET: RequestMapResourcesGetPayloadType
+    REQ_MAP_RESOURCE_UPDATE: RequestMapResourceUpdatePayloadType
+} 
 
-export type RequestPayloadType = 
-    RequestConnectionIdPayloadType | 
-    RequestAuthenticatePayloadType |
-    RequestCharacterSelectPayloadType |
-    RequestPlayerGetPayloadType | 
-    RequestPlayerListGetPayloadType | 
-    RequestPlayerUpdatePayloadType |
-    RequestPingPayloadType |
-    RequestMapResourcesGetPayloadType |
-    RequestMapResourceUpdatePayloadType
-
-
-
-export type ResponseHeaderType = 
-    'RES_CONNECTION_ID' | 
-    'RES_AUTHENTICATE' | 
-    'RES_CHARACTER_SELECT' |
-    'RES_PLAYER_GET' | 
-    'RES_PLAYERLIST_GET' | 
-    'RES_CHARACTER_LIST' |
-    'RES_PONG' |
-    'RES_MAP_RESOURCES_GET'
+export type RequestType = {
+    [K in keyof RequestPayloadMap ]: {
+        header: K
+        payload: RequestPayloadMap[K]
+    }
+} [keyof RequestPayloadMap]
+// ==================================================================================================================================
 
 
+
+// ==================================================================================================================================
+// RESPONSES
+// ==================================================================================================================================
 export type ResponseConnectionIdPayloadType = { cid: string }
 export type ResponseAuthenticatePayloadType = { characters: string[] }
 export type ResponseCharacterSelectPayloadType = null
@@ -58,24 +51,21 @@ export type ResponseCharacterListPayloadType = { username: string, charactersLis
 export type ResponsePongPayloadType = null
 export type ResponseMapResourcesGetPayloadType = { resources: Array<Resource> }
 
-export type ResponsePayloadType = 
-    ResponseConnectionIdPayloadType | 
-    ResponseAuthenticatePayloadType |
-    ResponseCharacterSelectPayloadType |
-    ResponsePlayerGetPayloadType | 
-    ResponsePlayerListGetPayloadType |
-    ResponseCharacterListPayloadType |
-    ResponsePongPayloadType |
-    ResponseMapResourcesGetPayloadType
-
-    
-
-export type RequestType = {
-    header: RequestHeaderType,
-    payload: RequestPayloadType
+export type ResponsePayloadMap = {
+    RES_CONNECTION_ID: ResponseConnectionIdPayloadType
+    RES_AUTHENTICATE: ResponseAuthenticatePayloadType
+    RES_CHARACTER_SELECT: ResponseCharacterSelectPayloadType
+    RES_PLAYER_GET: ResponsePlayerGetPayloadType
+    RES_PLAYERLIST_GET: ResponsePlayerListGetPayloadType
+    RES_CHARACTER_LIST: ResponseCharacterListPayloadType
+    RES_PONG: ResponsePongPayloadType
+    RES_MAP_RESOURCES_GET: ResponseMapResourcesGetPayloadType
 }
 
 export type ResponseType = {
-    header: ResponseHeaderType,
-    payload: ResponsePayloadType
-}
+    [K in keyof ResponsePayloadMap]: {
+        header: K,
+        payload: ResponsePayloadMap[K]
+    }
+} [keyof ResponsePayloadMap]
+// ==================================================================================================================================

@@ -1,4 +1,6 @@
+// @ts-ignore
 import type { Resource } from '../../shared/resourceType.ts'
+// @ts-ignore
 import type { PlayerType, ConnectionIdType } from '../../shared/playerType.ts'
 
 export const Players: PlayerType[] = []
