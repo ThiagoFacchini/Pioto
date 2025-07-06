@@ -6,6 +6,9 @@ import type { PlayerType, ConnectionIdType } from '../../shared/playerType.ts'
 import type { ConfigurationsType } from 'shared/configurationsType.ts'
 // @ts-ignore
 import type { MapType } from 'shared/mapType.ts'
+// @ts-ignore
+import type { EnvinronmentType } from 'shared/environmentType.ts'
+
 
 
 export const Players: PlayerType[] = []
@@ -34,7 +37,19 @@ export const Map: MapType = {
     size: [ 100, 100 ]
 }
 
+export const Environment: EnvinronmentType = {
+    date: null,
+    hoursPassed: 0,
+    season: null,
+    temperature: null,
+    isSnowing: false,
+    isRaining: false
+}
+
+
+// TODO: It should be probably moved somewhere else
 export const Configurations: ConfigurationsType = {
     startDate: '2025-01-01T06:00:00Z',
-    realMillisecondsPerHour: 10000
+    realMillisecondsPerHour: 1000
 }
+

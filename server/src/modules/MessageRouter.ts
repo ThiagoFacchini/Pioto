@@ -6,6 +6,7 @@ import Authentication from './Authentication.ts'
 import Configurations from './Configurations.ts'
 import Map from './Map.ts'
 import Network from './Networks.ts'
+import Environment from './Environment.ts'
 
 import { RequestType } from './../../../shared/messageTypes.ts'
 
@@ -21,7 +22,8 @@ const requestHandler = {
     REQ_MAP_RESOURCES_GET: Resources.requestMapResourcesGet,
     REQ_MAP_RESOURCE_UPDATE: Resources.requestMapResourceUpdate,
     REQ_GAME_CONFIGURATIONS: Configurations.requestGameConfigurations,
-    REQ_MAP_DEFINITIONS: Map.requestMapDefinitions
+    REQ_MAP_DEFINITIONS: Map.requestMapDefinitions,
+    REQ_ENVIRONMENT: Environment.requestEnvironment
 }
 
 export function receiveRequest( request: MessageEvent, socket: WebSocket, socketServer: WebSocketServer) {

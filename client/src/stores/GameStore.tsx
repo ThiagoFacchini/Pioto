@@ -2,7 +2,7 @@ import { create } from 'zustand'
 
 import { GameTime } from 'shared/messageTypes'
 import { MapType } from 'shared/mapType'
-import { ResponseMapDefinitionsPayloadType } from 'shared/messageTypes'
+import { ResponseMapDefinitionsPayloadType, ResponseEnviromentPayloadType } from 'shared/messageTypes'
 
 type GameStoreType = {
     date: Date,
@@ -14,7 +14,7 @@ type GameStoreType = {
 }
 
 export const useGameStore = create< GameStoreType >( ( set ) => ( {
-  date: new Date('2025-01-01T06:00:00Z'),
+  date: new Date(Date.UTC(30000, 0, 1, 6, 0, 0)),
   hoursPassed: 0,
   mapName: null,
   mapSize: [ 100, 100 ],
@@ -29,4 +29,9 @@ export function setGameTime( gameTime: GameTime ) {
 
 export function setMap( payload: ResponseMapDefinitionsPayloadType ) {
   useGameStore.getState().setMap( payload.map )
+}
+
+export function setEnvironment( payload: ResponseEnviromentPayloadType ) {
+  console.log('res environment ' , payload )
+  useGameStore.getState().setDate ( { date: payload.environment.date, hoursPassed: payload.environment.hoursPassed } )
 }

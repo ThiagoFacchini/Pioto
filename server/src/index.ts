@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url'
 import { v4 as uuid } from 'uuid'
 
 import Player from './modules/Player.ts'
+import { Environment } from './gameState.ts'
 
 // Modules
 import { RequestType } from './../../shared/messageTypes.ts'
@@ -14,7 +15,7 @@ import { receiveRequest } from './modules/MessageRouter.ts'
 import { attachSocketServer, serverBroadcast } from './modules/Broadcast.ts'
 
 // Systems
-import { startTimeSimulation, subscribe as subscribeTimeSimulation } from './modules/TimeModule.ts'
+import { startTimeSimulation, subscribe as subscribeTimeSimulation, getCurrentTime } from './modules/TimeModule.ts'
 import { GameTime } from './../../shared/messageTypes.ts'
 
 
@@ -64,6 +65,15 @@ subscribeTimeSimulation( 'TICK[index.ts]', ( gameTime: GameTime ) => {
     })
 })
 
+
+const currentGameTime = getCurrentTime()
+Environment.date = currentGameTime.date
+Environment.hoursPassed = currentGameTime.hoursPassed
+
+subscribeTimeSimulation( '[gameState.ts]',( gameTime: GameTime ) => {
+    Environment.date = gameTime.date
+    Environment.hoursPassed = gameTime.hoursPassed
+})
 
 
 server.listen( HTTP_PORT, () => {

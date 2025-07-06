@@ -6,7 +6,8 @@ import { Resource } from './resourceType.ts'
 import { Configurations } from './configurationsType.ts'
 // @ts-ignore
 import { MapType } from './mapType.ts'
-
+// @ts-ignore
+import { Environment } from './environmentType.ts'
 
 
 // ==================================================================================================================================
@@ -33,6 +34,7 @@ export type RequestMapResourcesGetPayloadType = null
 export type RequestMapResourceUpdatePayloadType = { resource: Resource }
 export type RequestGameConfigurationsPayloadType = null
 export type RequestMapDefinitionsPayloadType = null
+export type RequestEnvironmentPayloadType = null
 
 export type RequestPayloadMap = {
     REQ_CONNECTION_ID : RequestConnectionIdPayloadType
@@ -45,7 +47,8 @@ export type RequestPayloadMap = {
     REQ_MAP_RESOURCES_GET: RequestMapResourcesGetPayloadType
     REQ_MAP_RESOURCE_UPDATE: RequestMapResourceUpdatePayloadType
     REQ_GAME_CONFIGURATIONS: RequestGameConfigurationsPayloadType
-    REQ_MAP_DEFINITIONS: RequestMapDefinitionsPayloadType
+    REQ_MAP_DEFINITIONS: RequestMapDefinitionsPayloadType,
+    REQ_ENVIRONMENT: RequestEnvironmentPayloadType
 } 
 
 export type RequestType = {
@@ -69,6 +72,7 @@ export type ResponsePongPayloadType = null
 export type ResponseMapResourcesGetPayloadType = { resources: Array<Resource> }
 export type ResponseGameConfigurationsPayloadType = { configurations: Configurations }
 export type ResponseMapDefinitionsPayloadType = { map: MapType }
+export type ResponseEnviromentPayloadType = { environment: Environment }
 
 export type ResponsePayloadMap = {
     RES_CONNECTION_ID: ResponseConnectionIdPayloadType
@@ -79,7 +83,8 @@ export type ResponsePayloadMap = {
     RES_MAP_RESOURCES_GET: ResponseMapResourcesGetPayloadType,
     RES_TICK: GameTime,
     RES_GAME_CONFIGURATIONS: ResponseGameConfigurationsPayloadType
-    RES_MAP_DEFINITIONS: ResponseMapDefinitionsPayloadType
+    RES_MAP_DEFINITIONS: ResponseMapDefinitionsPayloadType,
+    RES_ENVIRONMENT: ResponseEnviromentPayloadType
 }
 
 export type ResponseType = {

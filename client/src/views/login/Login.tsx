@@ -31,11 +31,11 @@ function Login() {
 
 
     const mapName = useGameStore( ( state ) => state.mapName )
+    const currentYear = useGameStore( ( state ) => state.date )
 
     const [ formState, setFormState ] = useState( '' )
     const [ username, setUsername ] = useState( '' )
     const [ password, setPassword ] = useState( '' )
-
 
     // Request Connection ID
     useEffect( () => { 
@@ -64,28 +64,35 @@ function Login() {
 
     // Onoce characters is defined, then request Configurations and Map definitions
     useEffect( () => {
-        if ( isCharacterSelected )
-        console.log( 'Requesting Game Configurations...' )
-        sendRequest( {
-            header: 'REQ_GAME_CONFIGURATIONS',
-            payload: null
-        } )
+        if ( isCharacterSelected ) {
+            console.log( 'Requesting Game Configurations...' )
+            sendRequest( {
+                header: 'REQ_GAME_CONFIGURATIONS',
+                payload: null
+            } )
 
-        console.log( 'Requesting Map Definitions...' )
-        sendRequest( {
-            header: 'REQ_MAP_DEFINITIONS',
-            payload: null
-        } )
+            console.log( 'Requesting Map Definitions...' )
+            sendRequest( {
+                header: 'REQ_MAP_DEFINITIONS',
+                payload: null
+            } )
+
+            console.log( 'Requesting Environment...' ) 
+            sendRequest( {
+                header: 'REQ_ENVIRONMENT',
+                payload: null
+            } )
+        }
     }, [ isCharacterSelected ] )
 
 
     // Wait till Character, Configurations and Map definitions are loaded
     useEffect( () => {
-        if ( isCharacterSelected && realMillisecondsPerHour !== 0 && mapName !== null ) {
+        if ( isCharacterSelected && realMillisecondsPerHour !== 0 && mapName !== null && currentYear.getFullYear() !== 30000 ) {
             navigate( '/map', { replace: true } )
         }
 
-    }, [ isCharacterSelected, realMillisecondsPerHour, mapName ] )
+    }, [ isCharacterSelected, realMillisecondsPerHour, mapName, currentYear ] )
 
 
     function tryLogin() {

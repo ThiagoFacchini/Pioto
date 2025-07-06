@@ -4,6 +4,7 @@ import { Canvas } from '@react-three/fiber'
 import { KeyboardControls } from '@react-three/drei'
 import * as THREE from 'three'
 
+// 3D Components
 import FPSCounter from '../../components/3D/FPSCounter'
 import SunLight from '../../components/3D/SunLight'
 import Camera from '../../components/3D/Camera'
@@ -11,11 +12,17 @@ import PlayerCharacter from '../../components/3D/PlayerCharacter'
 import Characters from '../../components/3D/Characters'
 import Resources from '../../components/3D/Resources'
 
+
+// UI Components
+import GameClock from "../../components/UI/GameClock/GameClock"
+
 import { ping as sendPing } from './../../websocket/LatencyCounter'
 
 import { useWebSocketStore } from "../../stores/WebsocketStore"
 import { useConfigsStore } from '../../stores/ConfigsStore'
 import { usePlayersStore } from "../../stores/PlayersStore"
+
+
 
 
 // Map Logical Components
@@ -64,6 +71,7 @@ function Map() {
     return (
         <>
             <div style={{ width: '100vw', height: '100vh' }}>
+                <GameClock />
                 <KeyboardControls map={ controls } >
                     <Canvas>
                         {/* Layers */}

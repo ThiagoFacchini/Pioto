@@ -124,6 +124,7 @@ function requestCharacterSelect( request: RequestPayloadType['RES_CHARACTER_SELE
 }
 
 
+// TODO - Review
 function requestPlayerGet ( request: RequestPlayerGetPayloadType, socket: WebSocket, socketServer: WebSocketServer ) {
     const playerIndex = findPlayerIndexByConnectionID( request!.cid )
     
