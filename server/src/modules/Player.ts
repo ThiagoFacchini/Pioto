@@ -5,7 +5,7 @@ import { serverBroadcast } from './Broadcast.ts'
 //  @ts-ignore
 import type { PlayerType, ConnectionIdType } from '../../../shared/playerType.ts'
 // @ts-ignore
-import { RequestPayloadType, ResponseType } from './../../../shared/messageTypes.ts'
+import { RequestPlayerGetPayloadType, RequestPayloadType, ResponseType } from './../../../shared/messageTypes.ts'
 
 
 import { Players } from './../gameState.ts'
@@ -88,7 +88,7 @@ function requestConnectionId ( request: RequestPayloadType, socket: WebSocket, s
     const response: ResponseType = {
         header: 'RES_CONNECTION_ID',
         payload: {
-            cid: socket.connectionId!
+            connectionId: socket.connectionId!
         }
     }
     
@@ -100,15 +100,16 @@ function requestCharacterSelect( request: RequestPayloadType['RES_CHARACTER_SELE
     const playerIndex = findPlayerIndexByConnectionID( socket.connectionId! )
 
     if ( playerIndex !== false ) {
-        Players[ playerIndex ].name = request!.characterName
+        Players[ playerIndex ].name = request.characterName
 
         const response: ResponseType = {
             header: 'RES_CHARACTER_SELECT',
             payload: null
         }
 
-        // Confirm selection with the player
+        // Confirm selection with client
         socket.send( JSON.stringify( response ) )
+
 
         let broadcastResponse: ResponseType = {
             header: 'RES_PLAYERLIST_GET',
@@ -123,7 +124,7 @@ function requestCharacterSelect( request: RequestPayloadType['RES_CHARACTER_SELE
 }
 
 
-function requestPlayerGet ( request: RequestPayloadType, socket: WebSocket, socketServer: WebSocketServer ) {
+function requestPlayerGet ( request: RequestPlayerGetPayloadType, socket: WebSocket, socketServer: WebSocketServer ) {
     const playerIndex = findPlayerIndexByConnectionID( request!.cid )
     
     if ( playerIndex !== false ) {

@@ -26,7 +26,7 @@ type ControlKeys = 'forward' | 'backward' | 'left' | 'right' | 'jump'
 
 
 // Defines how often it sends updates to the server
-const updateRate = 1000 // ms
+const updateRate = 50 // ms
 
 // Define the size of the character which is use to compute collision and collision boxes
 const characterSize = new THREE.Vector3( 0.8, 1.7, 0.8 )

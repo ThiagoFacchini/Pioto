@@ -1,27 +1,30 @@
-import { updateConnectionId, updateAuthentication, updateCharacterSelected  } from './../stores/WebsocketStore'
+import { updateConnectionId, setCharacterList, updateCharacterSelected  } from './../stores/WebsocketStore'
 import { pong } from './LatencyCounter'
 
 import { setPlayerList } from './../stores/PlayersStore'
 import { setResources } from '../stores/ResourcesStore'
+import { setGameTime, setMap } from '../stores/GameStore'
+import { setConfigurations } from '../stores/ConfigsStore'
 
-import { ResponseType } from './../../../shared/messageTypes.js'
+import { ResponseType, ResponsePayloadMap } from './../../../shared/messageTypes.js'
 
 
 
-const responseHandler = {
+const responseHandler: { [ K in keyof ResponsePayloadMap ]: ( payload: ResponsePayloadMap[ K ] ) => void } = {
   RES_CONNECTION_ID: updateConnectionId,
   RES_CHARACTER_SELECT: updateCharacterSelected,
   RES_PLAYERLIST_GET: setPlayerList,
-  // RES_PLAYER_GET: () => { console.log('')},
-  RES_CHARACTER_LIST: updateAuthentication,
+  RES_CHARACTER_LIST: setCharacterList,
   RES_PONG: pong,
-  RES_MAP_RESOURCES_GET: setResources
+  RES_MAP_RESOURCES_GET: setResources,
+  RES_TICK: setGameTime,
+  RES_GAME_CONFIGURATIONS: setConfigurations,
+  RES_MAP_DEFINITIONS: setMap
 }
 
 
 
-export function routeMessage( response: ResponseType ) {
-  // @ts-ignore - Not sure how to workaround this Typescript error
+export function routeMessage< K extends keyof ResponsePayloadMap > ( response: { header: K; payload: ResponsePayloadMap[K] } ) {
   const handler = responseHandler[ response.header ]
 
   try { 

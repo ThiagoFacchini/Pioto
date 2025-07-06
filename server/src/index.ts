@@ -8,13 +8,14 @@ import { v4 as uuid } from 'uuid'
 
 import Player from './modules/Player.ts'
 
+// Modules
 import { RequestType } from './../../shared/messageTypes.ts'
 import { receiveRequest } from './modules/MessageRouter.ts'
-import { attachSocketServer } from './modules/Broadcast.ts'
+import { attachSocketServer, serverBroadcast } from './modules/Broadcast.ts'
 
-
-//  Review
-import { startTimeSimulator } from './modules/TimeSimulator.ts'
+// Systems
+import { startTimeSimulation, subscribe as subscribeTimeSimulation } from './modules/TimeModule.ts'
+import { GameTime } from './../../shared/messageTypes.ts'
 
 
 // Resolve __dirname for ES modules
@@ -29,6 +30,7 @@ app.use('/models', express.static( path.join( __dirname, '..', 'public', 'models
 const server = http.createServer( app )
 const HTTP_PORT = 8081
 const socketServer = new WebSocketServer( { port: 8080 } )
+console.log( 'WebSocket server running on ws://localhost:8080' )
 
 attachSocketServer( socketServer )
 
@@ -51,17 +53,20 @@ socketServer.on( 'connection', ( socket ) => {
 
 })
 
-console.log( 'WebSocket server running on ws://localhost:8080' )
+startTimeSimulation()
+console.log( 'Time Simulation Started' )
+
+
+subscribeTimeSimulation( 'TICK[index.ts]', ( gameTime: GameTime ) => {
+    serverBroadcast({
+        header: 'RES_TICK',
+        payload: gameTime
+    })
+})
+
 
 
 server.listen( HTTP_PORT, () => {
   console.log( `HTTP Server running at http:L//localhost:${HTTP_PORT}` )
   console.log( `Models served at http://localhost:${HTTP_PORT}/models` )
 } )
-
-
-// Start simulator with custom config
-// startTimeSimulator( socketServer, {
-//   simulatedDayLengthMs: 1000 * 60 * 60, // 1 real hour = 1 sim day
-//   // You can reduce this for faster dev/testing
-// } )

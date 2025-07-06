@@ -3,10 +3,11 @@ import type { WebSocket, WebSocketServer } from 'ws'
 import Resources from "./Resources.ts"
 import Player from './Player.ts'
 import Authentication from './Authentication.ts'
-import { requestPing } from './Networks.ts'
+import Configurations from './Configurations.ts'
+import Map from './Map.ts'
+import Network from './Networks.ts'
 
-import { ConnectionIdType  } from 'shared/playerType.ts'
-import { RequestType, ResponseType } from './../../../shared/messageTypes.ts'
+import { RequestType } from './../../../shared/messageTypes.ts'
 
 
 const requestHandler = {
@@ -16,9 +17,11 @@ const requestHandler = {
     REQ_PLAYER_GET: Player.requestPlayerGet,
     REQ_PLAYERLIST_GET: Player.requestPlayerListGet,
     REQ_PLAYER_UPDATE: Player.requestPlayerUpdate,
-    REQ_PING: requestPing,
+    REQ_PING: Network.requestPing,
     REQ_MAP_RESOURCES_GET: Resources.requestMapResourcesGet,
-    REQ_MAP_RESOURCE_UPDATE: Resources.requestMapResourceUpdate
+    REQ_MAP_RESOURCE_UPDATE: Resources.requestMapResourceUpdate,
+    REQ_GAME_CONFIGURATIONS: Configurations.requestGameConfigurations,
+    REQ_MAP_DEFINITIONS: Map.requestMapDefinitions
 }
 
 export function receiveRequest( request: MessageEvent, socket: WebSocket, socketServer: WebSocketServer) {

@@ -19,7 +19,7 @@ export function authenticate( request: RequestPayloadMap['REQ_AUTHENTICATE'], so
 
      
         const updatedPlayer: PlayerType = {
-            ...player, username: request!.username!
+            ...player, username: request.username
         }
 
         Player.requestPlayerUpdate( { player: updatedPlayer, callerId: 'Server - Authenticate' }, socket, socketServer )

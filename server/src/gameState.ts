@@ -2,9 +2,15 @@
 import type { Resource } from '../../shared/resourceType.ts'
 // @ts-ignore
 import type { PlayerType, ConnectionIdType } from '../../shared/playerType.ts'
+// @ts-ignore
+import type { ConfigurationsType } from 'shared/configurationsType.ts'
+// @ts-ignore
+import type { MapType } from 'shared/mapType.ts'
+
 
 export const Players: PlayerType[] = []
-export const Resources:Resource[] = [
+
+export const Resources: Resource[] = [
         {
             id: '1',
             type: "rock",
@@ -22,3 +28,13 @@ export const Resources:Resource[] = [
             collidable: false
         },
 ]
+
+export const Map: MapType = {
+    name: 'Isla de Valtoria',
+    size: [ 100, 100 ]
+}
+
+export const Configurations: ConfigurationsType = {
+    startDate: '2025-01-01T06:00:00Z',
+    realMillisecondsPerHour: 10000
+}

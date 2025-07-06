@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { connectWebSocket, sendRequest } from "../../websocket/WsClient"
 import { useWebSocketStore } from "../../stores/WebsocketStore"
 import { useConfigsStore } from "../../stores/ConfigsStore"
+import { useGameStore } from "../../stores/GameStore"
 
 
 import classNames from 'classnames'
@@ -26,9 +27,12 @@ function Login() {
     const serverPort = useConfigsStore( ( state ) => state.serverPort )
     const setServerAddress = useConfigsStore( ( state ) => state.setServerAddress )
     const setServerPort = useConfigsStore( ( state ) => state.setServerPort )
+    const realMillisecondsPerHour = useConfigsStore( ( state ) => state.realMillisecondsPerHour )
+
+
+    const mapName = useGameStore( ( state ) => state.mapName )
 
     const [ formState, setFormState ] = useState( '' )
-
     const [ username, setUsername ] = useState( '' )
     const [ password, setPassword ] = useState( '' )
 
@@ -58,17 +62,35 @@ function Login() {
     }, [ connectionId ] )
 
 
+    // Onoce characters is defined, then request Configurations and Map definitions
     useEffect( () => {
-        if ( isCharacterSelected ) {
+        if ( isCharacterSelected )
+        console.log( 'Requesting Game Configurations...' )
+        sendRequest( {
+            header: 'REQ_GAME_CONFIGURATIONS',
+            payload: null
+        } )
+
+        console.log( 'Requesting Map Definitions...' )
+        sendRequest( {
+            header: 'REQ_MAP_DEFINITIONS',
+            payload: null
+        } )
+    }, [ isCharacterSelected ] )
+
+
+    // Wait till Character, Configurations and Map definitions are loaded
+    useEffect( () => {
+        if ( isCharacterSelected && realMillisecondsPerHour !== 0 && mapName !== null ) {
             navigate( '/map', { replace: true } )
         }
 
-    }, [ isCharacterSelected ] )
+    }, [ isCharacterSelected, realMillisecondsPerHour, mapName ] )
 
 
     function tryLogin() {
         if ( serverAddress && serverPort && username && password ) {
-            connectWebSocket( serverAddress, serverPort, username, password )
+            connectWebSocket( serverAddress, serverPort )
         } else {
             setFormState( "error" )
         }
@@ -166,7 +188,7 @@ function Login() {
 
 
     function getViewComponents() {
-        if ( isAuthenticated ) {
+        if ( isAuthenticated && charactersList != null ) {
             return (
                 <div className={ style.characterList } >
                     <div className={ classNames( [ uiStyles.label, uiStyles.sm ] ) }>

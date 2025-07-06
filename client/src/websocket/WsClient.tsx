@@ -11,7 +11,7 @@ function getSocket() {
 }
 
 
-export function connectWebSocket( addr: string, port: number, username: string, password: string ) {
+export function connectWebSocket( addr: string, port: number ) {
   if  (socket && socket.readyState == WebSocket.OPEN ) {
     console.warn( '[WS] Already Connected' )
     return

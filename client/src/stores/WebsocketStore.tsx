@@ -1,9 +1,6 @@
 import { create } from 'zustand'
-import { devtools } from 'zustand/middleware'
 
-import { ResponseConnectionIdPayloadType, ResponseCharacterListPayloadType } from './../../../shared/messageTypes'
-import { isOrthographicCamera } from '@react-three/fiber/dist/declarations/src/core/utils'
-
+import { ResponseConnectionIdPayloadType, ResponseCharacterListPayloadType } from '../../../shared/messageTypes'
 
 type WebSocketStore = {
   isConnected: boolean,
@@ -21,8 +18,8 @@ type WebSocketStore = {
   clearStore: () => void
 }
 
-// @ts-ignore
-export const useWebSocketStore = create<WebSocketStore>( devtools ( ( set ) => ( {
+
+export const useWebSocketStore = create<WebSocketStore>( ( set ) => ( {
   isConnected: false,
   isAuthenticated: false,
   isCharacterSelected: false,
@@ -32,7 +29,7 @@ export const useWebSocketStore = create<WebSocketStore>( devtools ( ( set ) => (
   setConnected: ( connected ) => set( { isConnected: connected } ),
   setAuthenticated: ( authenticated ) => set( { isAuthenticated: authenticated } ),
   setCharacterSelected: ( selected ) => set({ isCharacterSelected: selected } ),
-  setConnectionId: ( cid ) => set( { connectionId: cid }),
+  setConnectionId: ( connectionId ) => set( { connectionId: connectionId }),
   setUserName: ( username ) => set( { username: username } ),
   setCharactersList: ( charactersList ) => set( { charactersList: charactersList } ),
   clearStore: () => {
@@ -45,13 +42,13 @@ export const useWebSocketStore = create<WebSocketStore>( devtools ( ( set ) => (
       username: null,
     })
   }
-} ), { name: 'WebsocketStore' }  ) )
+} ) )
 
  
 
 export function updateConnectionId( payload: ResponseConnectionIdPayloadType ) {
   console.log( "Updating CID..." )
-  useWebSocketStore.getState().setConnectionId( payload.cid )
+  useWebSocketStore.getState().setConnectionId( payload.connectionId )
 }
 
 
@@ -60,7 +57,7 @@ export function updateCharacterSelected() {
 }
 
 
-export function updateAuthentication( payload: ResponseCharacterListPayloadType ) {
+export function setCharacterList( payload: ResponseCharacterListPayloadType ) {
   console.log( "Updating Authentication..." )
   useWebSocketStore.getState().setAuthenticated( true )
   useWebSocketStore.getState().setUserName( payload.username )

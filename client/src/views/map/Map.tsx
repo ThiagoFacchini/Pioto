@@ -24,7 +24,7 @@ LAYER_COLLISION.name = "LAYER_COLLISIOIN"
 
 
 function Map() {
-    console.log('map re rendering')
+    console.log( '[MAP] - Rendering... ' )
     const navigate = useNavigate()
 
     
@@ -72,19 +72,23 @@ function Map() {
                         <ambientLight intensity={0.5} />
                         <SunLight />
 
-                        <mesh rotation={ [-Math.PI / 2, 0, 0] } receiveShadow>
-                            <planeGeometry args={ [60, 60] } />
-                            <meshStandardMaterial color="green" />
-                        </mesh>
 
-                        {/* <Suspense fallback={ null } > */}
+                        <Suspense fallback={ null } >
+                            <mesh rotation={ [-Math.PI / 2, 0, 0] } receiveShadow>
+                                <planeGeometry args={ [60, 60] } />
+                                <meshStandardMaterial color="green" />
+                            </mesh>
+
                             <PlayerCharacter forwardedRef={ playerRef } />
+                            <Camera targetRef={ playerRef } />
+
                             <Characters />
+
                             <Resources />
-                        {/* </Suspense> */}
+                            
+                        </Suspense>
                         
                         
-                        <Camera targetRef={ playerRef } />
 
                         {/* Debug tools */}
                         <FPSCounter />

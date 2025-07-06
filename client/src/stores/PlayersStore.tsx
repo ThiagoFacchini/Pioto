@@ -3,7 +3,7 @@ import { devtools } from 'zustand/middleware'
 import isEqual from 'lodash/isEqual'
 
 import type { PlayerType } from '../../../shared/playerType'
-import type { ResponsePlayerGetPayloadType, ResponsePlayerListGetPayloadType, ResponseCharacterSelectPayloadType } from '../../../shared/messageTypes'
+import type { ResponsePlayerListGetPayloadType } from '../../../shared/messageTypes'
 
 
 type PlayerStoreType = {

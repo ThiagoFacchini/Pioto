@@ -10,3 +10,7 @@ export function requestPing ( request: RequestType, socket: WebSocket, socketSer
     
     socket.send( JSON.stringify( response ) )
 }
+
+export default {
+    requestPing: requestPing
+}
