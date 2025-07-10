@@ -2,9 +2,10 @@ import { PerspectiveCamera } from "@react-three/drei";
 import { useFrame } from '@react-three/fiber'
 import { useRef, useState, useEffect, RefObject } from 'react'
 import * as THREE from 'three'
+import type { RapierRigidBody } from '@react-three/rapier'
 
 type PropsType = {
-    targetRef: RefObject<THREE.Object3D | null>
+    targetRef: RefObject<RapierRigidBody | null>
 }
 
 export default function Camera( { targetRef } : PropsType ) {
@@ -64,14 +65,14 @@ export default function Camera( { targetRef } : PropsType ) {
         const target = targetRef?.current
         if ( !camera || !target ) return
 
-        const targetPos = target.position
+        const targetPos = target.translation()
 
         const x = targetPos.x + distance * Math.sin( fixedPhi ) * Math.sin( theta )
         const y = targetPos.y + distance * Math.cos( fixedPhi )
         const z = targetPos.z + distance * Math.sin( fixedPhi ) * Math.cos( theta )
 
         camera.position.set( x, y, z )
-        camera.lookAt(targetPos)
+        camera.lookAt(targetPos.x, targetPos.y, targetPos.z)
     } )
 
     return (

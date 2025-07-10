@@ -1,63 +1,87 @@
+// 📦 - IMPORTS
+// ─────────────────────────────────────────────────────────────────────────────
+// [ CORE ]
+// ─────────────────────────────────────────────────────────────────────────────
 import { useEffect, useRef, useMemo, RefObject } from 'react'
 import { useGLTF, useAnimations, useKeyboardControls, Text } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils'
+import { RigidBody, CapsuleCollider } from '@react-three/rapier'
+import type { RapierRigidBody } from '@react-three/rapier'
 
-
-import { LAYER_COLLISION } from '../../views/map/Map'
-import { sendRequest } from "../../websocket/WsClient"
-
-
+// ─────────────────────────────────────────────────────────────────────────────
+// [ STORES ]
+// ─────────────────────────────────────────────────────────────────────────────
 import { useDebugStore } from '../../stores/DebugStore'
 import { useConfigsStore } from '../../stores/ConfigsStore'
-import { usePlayersStore, getPlayerByConnectionId } from '../../stores/PlayersStore'
+import { usePlayersStore } from '../../stores/PlayersStore'
 import { useWebSocketStore } from '../../stores/WebsocketStore'
 
+// ─────────────────────────────────────────────────────────────────────────────
+// [ SERVICES & UTILITIES ]
+// ─────────────────────────────────────────────────────────────────────────────
+import { sendRequest } from "../../websocket/WsClient"
 
-import { PlayerType } from './../../../../shared/playerType'
-
-
-// ==================================================================================================================================
-// [ ENTITY CONFIGURAATION ]
-// ==================================================================================================================================
-// Defines which keys will have a rection on this entity
-type ControlKeys = 'forward' | 'backward' | 'left' | 'right' | 'jump'
-
-
-// Defines how often it sends updates to the server
-const updateRate = 50 // ms
-
-// Define the size of the character which is use to compute collision and collision boxes
-const characterSize = new THREE.Vector3( 0.8, 1.7, 0.8 )
-// ==================================================================================================================================
+// ─────────────────────────────────────────────────────────────────────────────
+// [ SHARED TYPES & ENUMS ]
+// ─────────────────────────────────────────────────────────────────────────────
+import { PlayerType, AnimationNameType } from './../../../../shared/playerType'
 
 
-// ==================================================================================================================================
-// [ HELPER FUNCTIONS ]
-// ==================================================================================================================================
+// ⚙️ - INITIALIZATION
+// ─────────────────────────────────────────────────────────────────────────────
+// [ CONSTANTS & TYPES ]
+// ─────────────────────────────────────────────────────────────────────────────
+const UPDATE_RATE = 50                                                              // Defines how often it sends updates to the server
+const MIN_UPDATE_DISTANCE = 1                                                       // Defines how much the Player has to move for the resouces to be requested
+const LAST_RESOURCE_REQUEST_POSITION = new THREE.Vector3( Infinity )                // Stores in which position the player was when the last request for resources was made
+type ControlKeys = 'forward' | 'backward' | 'left' | 'right' | 'jump'               // Defines which keys will have a rection on this entity
 
-// Send Player updates to server
-// This functions gets called depending on the update rate, that means from time to time it will be called to update the server
-// about the player position, animationName and so on
-const updatePlayer = function ( character: THREE.Group, playerData: any, setPosition: ( position: [ number, number, number ] ) => void ) {
-    
+type PlayerCharacterType = {
+    forwardedRef: RefObject<RapierRigidBody | null>,
+}
+
+type GLTFPlayerType = {
+    playerData: PlayerType,
+    serverAddress: string,
+    serverPort: number,
+    forwardedRef: RefObject<RapierRigidBody | null>
+}
+// =============================================================================
+
+
+
+//  🧠 - HELPER FUNCTIONS 
+/** 
+* Send Player updates to server* 
+* This functions gets called depending on the update rate, that means from time to time it will be called to update the server
+* about the player position, animationName and so on
+*/
+const updatePlayer = function ( character: RapierRigidBody, playerData: PlayerType, currentAnimation: AnimationNameType ) {
+    const setPosition = useDebugStore.getState().setPosition
+
     if ( character != null ) {
+        const position = character.translation()
+        const rawQuat = character.rotation()
+        const rotationQuaternion = new THREE.Quaternion( rawQuat.x, rawQuat.y, rawQuat.z, rawQuat.w )
+        const eulerRotation = new THREE.Euler().setFromQuaternion( rotationQuaternion )
+
         sendRequest( {
             header: 'REQ_PLAYER_UPDATE',
             payload: { 
                 player: {
                     ...playerData,
-                    animationName: character.userData.currentAnimation,
-                    position: [
-                        character.position.x,
-                        character.position.y,
-                        character.position.z
+                    animationName: currentAnimation,
+                    position: [ 
+                        parseFloat( position.x.toFixed( 1 ) ),
+                        parseFloat( position.y.toFixed( 1 ) ),
+                        parseFloat( position.z.toFixed( 1 ) )
                     ],
-                    rotation: [
-                        character.rotation.x,
-                        character.rotation.y,
-                        character.rotation.z
+                    rotation: [ 
+                        parseFloat( eulerRotation.x.toFixed( 1 ) ),
+                        parseFloat( eulerRotation.y.toFixed( 1 ) ),
+                        parseFloat( eulerRotation.z.toFixed( 1 ) )
                     ]
                 },
                 callerId: 'PlayerCharacter.tsx - updatePlayer'
@@ -66,82 +90,21 @@ const updatePlayer = function ( character: THREE.Group, playerData: any, setPosi
 
         // Debug - Update Player Position
         setPosition( [ 
-            parseFloat( character.position.x.toFixed( 1 ) ), 
-            parseFloat( character.position.y.toFixed( 1 ) ), 
-            parseFloat( character.position.z.toFixed( 1 ) ), 
+            parseFloat( position.x.toFixed( 1 ) ), 
+            parseFloat( eulerRotation.y.toFixed( 1 ) ), 
+            parseFloat( eulerRotation.z.toFixed( 1 ) ), 
         ] )
     }
 }
 
 
-type RenderBoxType = {
-    size: [ number, number ],
-    shouldDisplay?: boolean,
-    height?: number,
-    color?: string,
-    opacity?: number
-}
+/**
+ * Function used to request an updated resource list from the server
+ */
+function requestResources( playerPosition: THREE.Vector3 ) {
 
-// Creates a helper renderBox around the player, this renderBox represents everything the player can see and it's tighted with
-// the serverResponse. e.g: the server will only send what the client can see.
-function CreateRenderBox ( props: RenderBoxType ) {
-    const shouldDisplay = props.shouldDisplay || false
-    const [ width, depth ] = props.size
-    const height = props.height || 3
-    const color = props.color || "lightblue"
-    const opacity = props.opacity || 0.2
-    const halfWidth = width / 2
-    const halfDepth = depth / 2
-    const midHeight = height / 2
-    
-    const createWall = ( position: [ number, number, number ], rotation: [ number, number, number ], size: [ number, number ] ) => {
-        const geometry = new THREE.PlaneGeometry( size[ 0 ], size[ 1 ] )
-        const material = new THREE.MeshBasicMaterial( { color, transparent: true, opacity, side: THREE.DoubleSide } )
-        
-        const edgeGeometry = new THREE.EdgesGeometry( geometry )
-        const edgeMaterial = new THREE.LineBasicMaterial( { color: "blue" } )
-        
-        return (
-            <group position={ position } rotation={ rotation } >
-                <mesh geometry={ geometry } material={ material } />
-                <lineSegments geometry={ edgeGeometry } material={ edgeMaterial } />
-            </group>
-        )
-    }
-    
-    
-    return (
-        <group visible={ shouldDisplay }>
-            {/* Front wall */}
-            { createWall( [ 0, midHeight, -halfDepth ], [ 0, 0, 0 ], [ width, height ] ) }
-
-            {/* Back wall */}
-            { createWall( [ 0, midHeight, halfDepth ], [ 0, Math.PI, 0 ], [ width, height ] ) }
-
-            {/* Left wall */}
-            { createWall( [ -halfWidth, midHeight, 0 ], [ 0, Math.PI / 2, 0 ], [ depth, height ] ) }
-
-            {/* Right wall */}
-            { createWall( [ halfWidth, midHeight, 0 ], [ 0, -Math.PI / 2, 0 ], [ depth, height ] ) }
-        </group>
-    )
-}
-
-
-type RequestResourceType = {
-    playerData: PlayerType
-}
-
-const MIN_DISTANCE = 1
-const lastRequestPosition = new THREE.Vector3(Infinity, Infinity, Infinity )
-
-// Function used to request an updated resource list from the server
-function requestResources( props: RequestResourceType ) {
-
-    const currentPosition = new THREE.Vector3( ...props.playerData.position )
-
-    if ( currentPosition.distanceTo( lastRequestPosition ) >= MIN_DISTANCE ) {
-        lastRequestPosition.copy( currentPosition )
+    if ( playerPosition.distanceTo( LAST_RESOURCE_REQUEST_POSITION ) >= MIN_UPDATE_DISTANCE ) {
+        LAST_RESOURCE_REQUEST_POSITION.copy( playerPosition )
 
         sendRequest( {
             header: 'REQ_MAP_RESOURCES_GET',
@@ -152,27 +115,30 @@ function requestResources( props: RequestResourceType ) {
 }
 
 
-type RequestPlayersType = {}
-
-// Function used to request an updates player list from the server
+/**
+ * Function used to request an updates player list from the server
+ */
 function requestPlayers() {
     sendRequest( {
         header: 'REQ_PLAYERLIST_GET',
         payload: null
-    })
+    } )
 }
-// ==================================================================================================================================
+// =============================================================================
 
 
 
-type PlayerCharacterType = {
-    forwardedRef: RefObject<THREE.Object3D | null>,
-}
-
-//  This function makes sure that all the Player Data gets properly loaded.
+// 🧩 - COMPONENTS
+/**
+ * This component makes sure all the player data is loaded before instantiate the
+ * GTLFPlayer component in the Scene Graph.
+ */
 export default function PlayerCharacter( props: PlayerCharacterType ) {
     const connectionId = useWebSocketStore( ( state ) => state.connectionId )
     const player = usePlayersStore(( state ) =>  state.playerList?.find( p => p.connectionId === connectionId ) || null )
+
+    const serverAddress = useConfigsStore( ( state ) => state.serverAddress )
+    const serverPort = useConfigsStore( ( state ) => state.serverPort )
 
     useEffect( () => {
         if ( player === null ) {
@@ -183,45 +149,41 @@ export default function PlayerCharacter( props: PlayerCharacterType ) {
                 }
             } )
         }
-    }, [ player ])
+    }, [ player ] )
 
 
     if ( !player ) return null
 
-    return <GLTFPlayer playerData={ player } {...props } />
+    return <GLTFPlayer playerData={ player } serverAddress={ serverAddress } serverPort={ serverPort } {...props } />
 }
 
 
-type GLTFPlayerType = {
-    playerData: PlayerType,
-    forwardedRef: RefObject<THREE.Object3D | null>
-}
-
+/**
+ * Component responsible for rendering the PlayerCharacter in the Scene Graph.
+ */
 function GLTFPlayer(props: GLTFPlayerType) {
-    
-    // State Selectors from Stores
-    const serverAddress = useConfigsStore( ( state ) => state.serverAddress )                       // Get server IP from ConfigsStore
-    const shouldShowCollisions = useDebugStore( ( state ) => state.showCollisions )                 // Debug show / hide Colissions
-    const shouldShowRenderBox = useDebugStore( ( state ) => state.showRenderBox  )                  // Debug show / hide RenderBox
-    const setPosition = useDebugStore( ( state ) => state.setPosition )                             // Debug position setter
-
-    const characterRef = useRef<THREE.Group>( null )                                                // Reference to the group where character & nameTag will be
+    // Internal References
+    const rigidBodyRef = useRef<RapierRigidBody>( null )                                            // Reference to the RigidBody
     const nameTagRef = useRef<THREE.Object3D>( null )                                               // Reference to the character nameTag
-    const collisionBoxRef = useRef (new THREE.Box3() )                                              // Collision Box
-    const collisionBoxHelperRef = useRef<THREE.Box3Helper>( null )                                  // Collision Box Helper (debug purposes)
     const isMovingRef = useRef( false )                                                             // Tracker for Character Movement
+    const currentAnimationRef = useRef<AnimationNameType>( null )                                   // Tracker for Character Current Animation
 
-    const forward = useKeyboardControls<ControlKeys>( ( state ) => state.forward )                  
-    const backward = useKeyboardControls<ControlKeys>( ( state ) => state.backward )
-    const left = useKeyboardControls<ControlKeys>( ( state ) => state.left )
-    const right = useKeyboardControls<ControlKeys>( ( state ) => state.right )
-
+    // Keystrokes the character should listen to
+    const forward = useKeyboardControls<ControlKeys>( ( state ) => state.forward )                  // Up || Forward
+    const backward = useKeyboardControls<ControlKeys>( ( state ) => state.backward )                // Down || Backwards
+    const left = useKeyboardControls<ControlKeys>( ( state ) => state.left )                        // Left
+    const right = useKeyboardControls<ControlKeys>( ( state ) => state.right )                      // Right
+    
     let lastUpdateTime = 0                                                                          // Used to throttle Character updates to server
 
+
     // Load model oly after player data is available
-    let gltf = useGLTF(`http://${serverAddress}:8081/models/${props.playerData.meshName}`)
+    // TODO - There's no server port stored for loading assets, props.port maps back to the socket
+    // port which is currently 8080
+    let gltf = useGLTF(`http://${ props.serverAddress }:8081/models/${ props.playerData.meshName }`)
     
-    // Clone the scene ( mesh ) to make it safe for use
+    // Clone the scene ( mesh ) to make it safe for use and memoize it since it's very unlikely
+    // to change
     const clonedInstance = useMemo(() => {
         const instance = clone( gltf.scene )
         instance.position.set( 0, 0, 0 )
@@ -232,11 +194,11 @@ function GLTFPlayer(props: GLTFPlayerType) {
     // Animation actions
     const { actions } = useAnimations( gltf.animations, clonedInstance )
 
+
     // Assign the forwardedRef ( from parent ) to Character and set inital animation
     useEffect( () => {
-        if ( props.forwardedRef && characterRef.current ) {
-            props.forwardedRef.current = characterRef.current
-            characterRef.current.userData.currentAnimation = 'Idle'
+        if ( props.forwardedRef && rigidBodyRef.current ) {
+            props.forwardedRef.current = rigidBodyRef.current
         }
     }, [ props.forwardedRef ] )
 
@@ -244,48 +206,22 @@ function GLTFPlayer(props: GLTFPlayerType) {
     // Set the Character to start on IDLE animation
     useEffect( () => {
         actions['Idle']?.reset().fadeIn( 0.2 ).play()
+        currentAnimationRef.current = 'Idle'
     }, [ actions ] )
-
-
-    // Creates the collisionBoxHelper and assigned characterRef as its parent
-    useEffect( () => {
-        const helper = new THREE.Box3Helper( collisionBoxRef.current, "red" )
-        collisionBoxRef.current.copy( computeCollisionBox( characterRef.current!.position ) )
-
-        collisionBoxHelperRef.current = helper
-        collisionBoxHelperRef.current.visible = shouldShowCollisions
-        characterRef.current?.parent?.add( helper )
-
-        return () => {
-            characterRef.current?.parent?.remove( helper )
-        }
-    }, [])
-
-
-    // Show or hide the collision helper based on show / hide Collisions toggle (debugStore)
-    useEffect( () => {
-        if ( collisionBoxHelperRef.current ) {
-            collisionBoxHelperRef.current.visible = shouldShowCollisions
-        }
-    }, [ shouldShowCollisions ] )
-
-
-    // Computes a box centered on character position (optionally offset)
-    function computeCollisionBox( basePos: THREE.Vector3, offset: THREE.Vector3 = new THREE.Vector3() ) {
-        const center = basePos.clone().add( new THREE.Vector3(0, characterSize.y / 2, 0 ) ).add( offset )
-        return new THREE.Box3().setFromCenterAndSize( center, characterSize )
-    }
 
 
     // Normalise the input direction
     function getDirection() {
-        const dir = { x: 0, z: 0 }
-        if ( forward ) dir.z -= 1
-        if ( backward ) dir.z += 1
-        if ( left ) dir.x -= 1
-        if ( right ) dir.x += 1
-        return dir
+        const moveDirection = new THREE.Vector3()
+
+        if ( forward ) moveDirection.z -= 1
+        if ( backward ) moveDirection.z += 1
+        if ( left ) moveDirection.x -= 1
+        if ( right ) moveDirection.x += 1
+
+        return moveDirection
     }
+
 
     // Swap animation baed on movement state
     function updateAnimationState( isMoving: boolean ) {
@@ -295,94 +231,79 @@ function GLTFPlayer(props: GLTFPlayerType) {
             if ( isMoving ) {
                 actions[ 'Idle' ]?.fadeOut( 0.2 )
                 actions[ 'Walk' ]?.reset().fadeIn( 0.2 ).play()
-                characterRef.current!.userData.currentAnimation = 'Walk'
+                currentAnimationRef.current = 'Walk'
             } else {
                 actions[ 'Walk' ]?.fadeOut(0.2)
                 actions[ 'Idle' ]?.reset().fadeIn( 0.2 ).play()
-                characterRef.current!.userData.currentAnimation = 'Idle'
+                currentAnimationRef.current = 'Idle'
             }
         }
     }
 
 
-    // Detects intersection between character and static objects ( with colliders )
-    function checkCollisions( moveVec: THREE.Vector3 ): boolean {
-        if ( !characterRef.current ) return true
-        
-        const collisionBox = computeCollisionBox( characterRef.current.position, moveVec )
+    useFrame(( state ) => {
+        const body = rigidBodyRef.current
+        if ( !body ) return
 
-        collisionBoxRef.current.copy( collisionBox )
-        collisionBoxHelperRef.current?.updateMatrixWorld( true )
+        const move = getDirection()
+        const isMoving = move.lengthSq() > 0
+        const velocity = body.linvel()
 
-        let collided = false
-        LAYER_COLLISION.traverse( ( obj ) => {
-            if (
-                obj instanceof THREE.Mesh &&
-                obj.userData.collidable &&
-                obj !== characterRef.current as THREE.Object3D &&
-                obj.geometry?.boundingBox
-            ) {
-                const objBox = obj.geometry.boundingBox.clone().applyMatrix4( obj.matrixWorld )
-                if ( collisionBox.intersectsBox( objBox ) ) collided = true
-            }
-        } )
-
-        return collided
-    }
-
-
-    useFrame(( _, delta ) => {
-        const dir = getDirection()
-        const len = Math.hypot( dir.x, dir.z )
-        const isMoving = len > 0
-
-        if ( characterRef.current ) characterRef.current.userData.isMoving = isMoving
         updateAnimationState( isMoving )
 
-        if ( len > 0 && characterRef.current ) {
-            dir.x /= len
-            dir.z /= len
 
-            const speed = 3
-            characterRef.current.updateMatrixWorld( true )
+        // Movement & Rotation
+        if ( move.lengthSq() > 0 ) {
+            // Moves the rigidBody
+            move.normalize().multiplyScalar( 3 )
+            body.setLinvel( { x: move.x, y: velocity.y, z: move.z }, true )
 
-            const moveVec = new THREE.Vector3( dir.x * speed * delta, 0, dir.z * speed * delta )
+            // Rotates the rigidBody
+            const lookingAngle = Math.atan2( -move.x, -move.z )
+            const quaternion = new THREE.Quaternion().setFromEuler( new THREE.Euler(0, lookingAngle, 0 ) )
+            body.setRotation( quaternion, true )
+            // clonedInstance.rotation.y = lookingAngle
 
-            if ( !checkCollisions( moveVec ) ) {
-                characterRef.current.position.add( moveVec )
-                const angle = Math.atan2( dir.x, dir.z )
-                characterRef.current.rotation.y = angle + Math.PI
-            }
+        } else {
+            body.setLinvel( { x: 0, y: velocity.y, z: 0 }, true )
         }
 
+        
         // Throttled update requests
-        if ( performance.now() - lastUpdateTime > updateRate ) {
+        if ( performance.now() - lastUpdateTime > UPDATE_RATE ) {
             lastUpdateTime = performance.now()
-            updatePlayer( characterRef.current!, props.playerData, setPosition )
+
+            updatePlayer( rigidBodyRef.current!, props.playerData, currentAnimationRef.current! )
             
-            const updatedPlayerData = {
-                ...props.playerData,
-                position: characterRef!.current!.position.toArray()
-            }
-            requestResources( { playerData: updatedPlayerData } )
+            const bodyPosition = body.translation()
+            requestResources( new THREE.Vector3( bodyPosition.x, bodyPosition.y, bodyPosition.z ) )
+
             requestPlayers()
+        }
+
+
+        // Making the nameTag always look to the Camera
+        if ( rigidBodyRef.current && nameTagRef.current ) {
+            nameTagRef.current.lookAt( state.camera.position )
         }
     } )
 
 
-
-
-    // Make the nameTag always face player camera
-    useFrame( ( { camera } ) => {
-        if ( characterRef.current && nameTagRef.current ) {
-            nameTagRef.current.lookAt( camera.position )
-        }
-    })
-
-    
     return (
-        <group ref={ characterRef } position={props.playerData.position} rotation={props.playerData.rotation}>
-            <primitive object={ clonedInstance } />
+        <RigidBody
+            ref={ rigidBodyRef }
+            colliders={ false }
+            mass={ 1 }
+            restitution={ 0.1 }
+            friction={ 1 }
+            lockRotations
+        >
+            {/* Character Mesh */}
+             <primitive object={ clonedInstance } />
+             {/* Character Collider */}
+             <CapsuleCollider args={ [ 0.4, 0.4 ] } position={ [ 0, 0.9, 0] }/>
+
+            {/* Name Tag */}
             <Text
                 ref={nameTagRef}
                 position={[0, 2, 0]}
@@ -392,10 +313,9 @@ function GLTFPlayer(props: GLTFPlayerType) {
                 anchorY="bottom"
                 outlineWidth={0.01}
                 outlineColor="black"
-            >
-                {props.playerData.name ?? 'unknown'}
+                >
+                    { props.playerData.name ?? 'unknown' }
             </Text>
-            <CreateRenderBox size={ props.playerData.renderBox } shouldDisplay={ shouldShowRenderBox } />
-        </group>
+        </RigidBody>
     )
 }

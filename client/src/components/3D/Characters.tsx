@@ -1,33 +1,54 @@
+// 📦 - IMPORTS
+// ─────────────────────────────────────────────────────────────────────────────
+// [ CORE ]
+// ─────────────────────────────────────────────────────────────────────────────
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { useGLTF, useAnimations, Text } from '@react-three/drei'
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils'
 import React, { useRef, useEffect, useMemo, memo } from 'react'
 
-
-import { sendRequest } from "../../websocket/WsClient"
-
+// ─────────────────────────────────────────────────────────────────────────────
+// [ STORES ]
+// ─────────────────────────────────────────────────────────────────────────────
 import { useConfigsStore } from '../../stores/ConfigsStore'
 import { usePlayersStore } from '../../stores/PlayersStore'
 import { useWebSocketStore } from '../../stores/WebsocketStore'
 
+// ─────────────────────────────────────────────────────────────────────────────
+// [ SERVICES & UTILITIES ]
+// ─────────────────────────────────────────────────────────────────────────────
+import { sendRequest } from "../../websocket/WsClient"
+
+// ─────────────────────────────────────────────────────────────────────────────
+// [ SHARED TYPES & ENUMS ]
+// ─────────────────────────────────────────────────────────────────────────────
 import { AnimationNameType } from '../../../../shared/playerType'
 
+type GLTFCharacterType = {
+    name?: string,
+    meshName: string,
+    animationName: AnimationNameType,
+    position: [ number, number, number ],
+    rotation: [ number, number, number ],
+}
+// =============================================================================
 
 
-// ==================================================================================================================================
-// [ ENTITY CONFIGURAATION ]
-// ==================================================================================================================================
-// Defines how often GLTFCharacter will update
-const updateRate = 100 // ms
 
-// ==================================================================================================================================
+// ⚙️ - INITIALIZATION
+// ─────────────────────────────────────────────────────────────────────────────
+// [ CONSTANTS & TYPES ]
+// ─────────────────────────────────────────────────────────────────────────────
+const updateRate = 100                                                                              // Defines how often GLTFCharacter will update
+// =============================================================================
 
-// ==================================================================================================================================
-// [ HELPER FUNCTIONS ]
-// ==================================================================================================================================
 
-// This function check if GLTFCharacter properties (key ones) changed and it return true or false preventing unnecessary rerendering.
+
+//  🧠 - HELPER FUNCTIONS 
+/**
+ * This function check if GLTFCharacter properties (key ones) changed and it return true or false preventing unnecessary rerendering.
+ */
 function areEqual(prev: GLTFCharacterType, next: GLTFCharacterType): boolean {
   return (
     prev.name === next.name &&
@@ -41,14 +62,19 @@ function areEqual(prev: GLTFCharacterType, next: GLTFCharacterType): boolean {
     prev.rotation[2] === next.rotation[2]
   )
 }
-// ==================================================================================================================================
+// =============================================================================
 
 
+
+// 🧩 - COMPONENTS
+/**
+ * This component makes sure all the characters data are loaded before instantiate the
+ * GLTFCharacter component in the Scene Graph.
+ */
 export default function Characters() {
     const playerList = usePlayersStore( ( state ) => state.playerList )
     const connectionId = useWebSocketStore( ( state ) => state.connectionId )
 
-    // console.log('Characters: re rendering')
     // Request Players
     useEffect( () => { 
         if ( playerList === null ) {
@@ -83,34 +109,34 @@ export default function Characters() {
 
 
 
-type GLTFCharacterType = {
-    name?: string,
-    meshName: string,
-    animationName: AnimationNameType,
-    position: [ number, number, number ],
-    rotation: [ number, number, number ],
-}
-
 
 const GLTFCharacter = React.memo( function GLTFCharacter( props: GLTFCharacterType ) {
+    // Internal References
+    const characterRef = useRef<THREE.Group>( null )                                            // Reference to the Character Group 
+    const nameTagRef = useRef<THREE.Object3D>( null )                                           // Reference to the Character NameTag
+    const currentAnimationRef = useRef<string | null>( null )                                   // Reference to the Character current animation
+    
+    // Store Connections
     const serverAddress = useConfigsStore( ( state ) => state.serverAddress )
     
     console.log("Rendering character", props.name)
 
+    // Load model oly after player data is available
+    // TODO - There's no server port stored for loading assets, props.port maps back to the socket
+    // port which is currently 8080    
     const gltf = useGLTF( `http://${serverAddress}:8081/models/${props.meshName}` )
+
+    // Clone the gltf to make it safe for use and memoize it since it's very unlikely to change
     const clonedInstance = useMemo(() => {
         const instance = clone( gltf.scene )
         instance.position.set( 0, 0, 0 )
         instance.rotation.set( 0, 0, 0 )
         return instance
-    }, [gltf.scene] )
+    }, [ gltf.scene ] )
 
-    const { animations } = gltf
-    const { actions } = useAnimations( animations, clonedInstance )
+    // Animation Actions
+    const { actions } = useAnimations( gltf.animations, clonedInstance )
 
-    const characterRef = useRef<THREE.Group>( null )
-    const nameTagRef = useRef<THREE.Object3D>( null )
-    const currentAnimationRef = useRef<string | null>( null )
 
     // React will re-render this component if `position` or `rotation` props are new array instances,
     // even if their values are identical. To prevent unnecessary re-renders, we memoize these arrays
@@ -212,7 +238,6 @@ const GLTFCharacter = React.memo( function GLTFCharacter( props: GLTFCharacterTy
             >
                 { props.name ? props.name : 'unknown' }
             </Text>
-
         </group>
     )
 }, areEqual )

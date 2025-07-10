@@ -1,37 +1,68 @@
+// 📦 - IMPORTS
+// ─────────────────────────────────────────────────────────────────────────────
+// [ CORE ]
+// ─────────────────────────────────────────────────────────────────────────────
 import { useRef, useEffect, useMemo } from 'react'
 import { useGLTF, TransformControls } from '@react-three/drei'
+import { clone } from 'three/examples/jsm/utils/SkeletonUtils'
 import * as THREE from 'three'
+import { RigidBody, CapsuleCollider } from '@react-three/rapier'
+import { RapierRigidBody } from '@react-three/rapier'
 
-import { Resource } from '../../../shared/resourceType'
-
-import Collider from './../components/3D/Collider'
-import { sendRequest } from '../websocket/WsClient'
-
+// ─────────────────────────────────────────────────────────────────────────────
+// [ STORES ]
+// ─────────────────────────────────────────────────────────────────────────────
 import { useBuildStore } from '../stores/BuildStore'
-import { useDebugStore } from '../stores/DebugStore'
 import { useConfigsStore } from '../stores/ConfigsStore'
 
+// ─────────────────────────────────────────────────────────────────────────────
+// [ SERVICES & UTILITIES ]
+// ─────────────────────────────────────────────────────────────────────────────
+import { sendRequest } from '../websocket/WsClient'
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// [ SHARED TYPES & ENUMS ]
+// ─────────────────────────────────────────────────────────────────────────────
+import { Resource } from '../../../shared/resourceType'
 
 type PropsType = {
     resource: Resource,
 }
+// =============================================================================
 
+
+
+// 🧩 - COMPONENTS
+/**
+ * This component renders a resource of type Rock
+ */
 export default function Rock( props: PropsType ) {
+    // Internal References
+    const editControlsRef = useRef<any>( null )                                                 // Reference to TransformControls
+    const rigidBodyRef = useRef< RapierRigidBody >( null )                                      // Reference to the RigidBody
+
+    // Store Connections
     const serverAddress = useConfigsStore( ( state ) => state.serverAddress )
-
-    const { scene } = useGLTF(`http://${serverAddress}:8081/models/Rock 1.glb`)
-    const rock = scene.clone( true )
-
-    const meshRef = useRef< THREE.Group >( null )
-    const controlsRef = useRef<any>( null )
-
     const { selectedResourceId, selectResource, clearSelection } = useBuildStore()
-    const showCollisions = useDebugStore( (state ) => state.showCollisions )
+
 
     const isSelected = selectedResourceId === props.resource.id
+    // Load model oly after player data is available
+    // TODO - There's no server port stored for loading assets, props.port maps back to the socket
+    // port which is currently 8080
+    const { scene } = useGLTF(`http://${serverAddress}:8081/models/Rock 1.glb`)
+
+    // Clone the scene ( mesh ) to make it safe for use and memoize it since it's very unlikely
+    // to change
+    const rockMesh = useMemo( () => ( 
+        scene.clone( true )
+    ), [ scene ] )
 
     
-    // Unselect
+    /**
+     * This effect unselect the resource if selected.
+     */
     useEffect( () => {
         const handleKeyDown = ( e: KeyboardEvent ) => {
             if (e.key === 'Escape') clearSelection()
@@ -42,12 +73,24 @@ export default function Rock( props: PropsType ) {
     }, [ clearSelection ] )
 
 
+    /**
+     * This effect attach mouse events to the object
+     */
     useEffect( () => {
-        if ( !controlsRef.current || !isSelected ) return
+        if ( !editControlsRef.current || !isSelected ) return
 
         const handleMouseUp = () => {
-            if ( controlsRef.current ) {
-                const newPos = controlsRef.current?.object?.position.toArray()
+            if ( editControlsRef.current ) {
+                const newPos = editControlsRef.current?.object?.position.toArray()
+
+                // @TODO - Check how can the position of the rigid body be updated
+                // once the drag is over without offset the grup.
+                // Update Rigid Body Position
+                // rigidBodyRef.current?.setTranslation(
+                //     { x: newPos[ 0 ], y: newPos[ 1 ], z: newPos[ 2 ] },
+                //     false
+                // )
+
 
                 if ( !newPos ) return
 
@@ -63,45 +106,42 @@ export default function Rock( props: PropsType ) {
     } )
 
 
-    function shouldRenderCollider () {
-        return (
-                <Collider 
-                type="CUBE" 
-                size={ props.resource.size } 
-                position={ props.resource.position } 
-                isCollidable={ props.resource.collidable } 
-                offset={ [ 0, props.resource.size[1] / 2, 0.03 ] }
-                isVisible={ showCollisions }
-            />
-        )
-    }
-
- 
-    return (
-        isSelected ? (
-            <TransformControls ref={ controlsRef } mode="translate" position={ props.resource.position }>
-                <group
-                    ref={ meshRef }
-                    onClick={ ( e ) => {
-                        e.stopPropagation()
-                        selectResource( props.resource.id )
-                    } }
-                >
-                    <primitive object={ rock } castShadow receiveShadow/>
-                </group>
-            </TransformControls>
-        ) : (
-            <group
-                ref={ meshRef }
-                position={ props.resource.position }
+    const rigidBody = useMemo( () => (
+        <RigidBody
+            ref={ rigidBodyRef }
+            type={ "fixed" }
+            colliders={ props.resource.collidable ? "cuboid" : false }
+        >
+             <group
                 onClick={ ( e ) => {
-                e.stopPropagation()
-                    selectResource( props.resource.id )
-                } }
-            >
-                <primitive object={ rock } castShadow receiveShadow />
-                { shouldRenderCollider() }
+                    e.stopPropagation()
+                    selectResource(props.resource.id)
+                }}
+             >
+                { rockMesh && <primitive object={rockMesh} castShadow receiveShadow /> }
             </group>
-        )
+        </RigidBody>
+
+        ), [ props.resource.collidable, props.resource.position, props.resource.id, isSelected, rockMesh ] 
+    )
+
+
+    return isSelected ? (
+        <TransformControls
+            ref={editControlsRef}
+            mode="translate"
+            position={props.resource.position}
+        >
+            { rigidBody }
+        </TransformControls>
+    ) : (
+        <RigidBody
+            ref={rigidBodyRef}
+            type="fixed"
+            colliders={ props.resource.collidable ? "cuboid" : false }
+            position={ props.resource.position }
+        >
+            { rigidBody }
+        </RigidBody>
     )
 }

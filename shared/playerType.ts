@@ -1,6 +1,6 @@
 export type ConnectionIdType = string
 
-export type AnimationNameType = 'Idle' | 'Walking'
+export type AnimationNameType = 'Idle' | 'Walk'
 
 export type PlayerType = {
     connectionId: ConnectionIdType,

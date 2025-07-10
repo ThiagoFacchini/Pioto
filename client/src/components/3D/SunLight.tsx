@@ -16,7 +16,7 @@ export default function SunLight() {
   // Attach the helper to this light
   useHelper( lightRef as RefObject<THREE.DirectionalLight>, DirectionalLightHelper, 1, 'hotpink' )
 
-  console.log( 'light intensity is: ' ,lightIntensity )
+  // console.log( 'light intensity is: ' ,lightIntensity )
   return (
     <directionalLight
       ref={ lightRef }

@@ -11,6 +11,9 @@
         top: -150px;
     }
 
+    & .noTransition {
+        transition: none !important;
+    }
 
     & .withTransition {
         transition: transform linear var(--clock-transition-duration);

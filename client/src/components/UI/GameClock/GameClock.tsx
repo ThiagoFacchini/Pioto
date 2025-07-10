@@ -1,46 +1,71 @@
-import React, { useEffect, useState } from 'react'
-
+import React, { useEffect, useRef, useState } from 'react'
 import { useGameStore } from '../../../stores/GameStore'
 import { useConfigsStore } from '../../../stores/ConfigsStore'
 
 // @ts-ignore
 import clockImage from './assets/clock.png'
-
 // @ts-ignore
 import styles from './styles.module.css'
 
 export default function GameClock() {
-    const [ hasRendered, setHasRendered ] = useState( false )
+    const [visible, setVisible] = useState(false)
+    const [withTransition, setWithTransition] = useState(false)
 
-    const hoursPassed = useGameStore( ( state ) => state.hoursPassed )
-    const realMillisecondsPerHour = useConfigsStore( ( state ) => state.realMillisecondsPerHour )
-    const degrees = ( hoursPassed % 24 ) * 15
+    const prevHour = useRef<number>(0)
+    const rotation = useRef<number>(0)
 
-    useEffect( () => {
-        // Using requestAnimation frame to delay the state change, just so the clock can adjust
-        const id = setTimeout(() => setHasRendered(true), 0)
-        return () => clearTimeout(id)
-    })    
+    const hoursPassed = useGameStore((state) => state.hoursPassed)
+    const realMillisecondsPerHour = useConfigsStore((state) => state.realMillisecondsPerHour)
 
-    const imageClass = hasRendered ? styles.withTransition : ''
+    // Initial static render
+    useEffect(() => {
+        const currentHour = hoursPassed % 24
+        rotation.current = currentHour * 15
+        prevHour.current = hoursPassed
+
+        // Wait one frame to ensure DOM has painted
+        requestAnimationFrame(() => {
+            setVisible(true)
+            // Then wait another frame before enabling transition
+            requestAnimationFrame(() => {
+                setWithTransition(true)
+            })
+        })
+    }, [])
+
+    // Update on tick
+    useEffect(() => {
+        if ( !withTransition ) return
+
+        const currentHour = hoursPassed % 24
+        const previousHour = prevHour.current % 24
+        const diff = (currentHour - previousHour + 24) % 24
+
+        rotation.current += diff * 15
+        prevHour.current = hoursPassed
+    }, [hoursPassed, withTransition] )
+
+    if ( !visible ) return null
+
+    const imageClass = withTransition ? styles.withTransition : styles.noTransition
 
     return (
-        <div className={ styles.gameclockContainer } >
-            <div className={ styles.imageContainer } >
-                <img 
-                    src={ clockImage }
-                    className={ imageClass }
+        <div className={styles.gameclockContainer}>
+            <div className={styles.imageContainer}>
+                <img
+                    src={clockImage}
+                    className={imageClass}
                     style={{
-                        transform: `rotate(${degrees}deg)`,
+                        transform: `rotate(${ rotation.current + 30 }deg)`,
                         transformOrigin: 'center center',
                         width: '100%',
                         display: 'block',
-                        '--clock-transition-duration' : `${realMillisecondsPerHour}ms`
-                    } as React.CSSProperties } 
+                        '--clock-transition-duration': `${realMillisecondsPerHour}ms`
+                    } as React.CSSProperties}
                 />
             </div>
-            <div className={ styles.temporary } >
-                { hoursPassed % 24 }
+            <div className={styles.temporary}>
+                {hoursPassed % 24}
             </div>
         </div>
     )
