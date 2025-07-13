@@ -12,8 +12,6 @@ const timeSystem = new GameTimeSystem( {
 } )
 
 timeSystem.on( 'tick', ( time: GameTime ) => {
-    console.log('Broadcasting Tick')
-
     for (const [ name, callback ] of subscribers ) {
         try {
             callback( time )

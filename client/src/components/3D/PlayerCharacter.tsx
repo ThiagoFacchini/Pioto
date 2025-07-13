@@ -27,6 +27,8 @@ import { sendRequest } from "../../websocket/WsClient"
 // [ SHARED TYPES & ENUMS ]
 // ─────────────────────────────────────────────────────────────────────────────
 import { PlayerType, AnimationNameType } from './../../../../shared/playerType'
+// =============================================================================
+
 
 
 // ⚙️ - INITIALIZATION
@@ -297,11 +299,16 @@ function GLTFPlayer(props: GLTFPlayerType) {
             restitution={ 0.1 }
             friction={ 1 }
             lockRotations
+            onIntersectionEnter={ ( e ) => {
+                if ( e.colliderObject?.name === "water" ) {
+                    console.log("💧 Player entered water")
+                }
+            } }
         >
             {/* Character Mesh */}
              <primitive object={ clonedInstance } />
              {/* Character Collider */}
-             <CapsuleCollider args={ [ 0.4, 0.4 ] } position={ [ 0, 0.9, 0] }/>
+             <CapsuleCollider args={ [ 0.4, 0.5 ] } position={ [ 0, 0.8, 0] }/>
 
             {/* Name Tag */}
             <Text

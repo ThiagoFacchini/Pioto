@@ -49,7 +49,7 @@ export const Environment: EnvinronmentType = {
 
 // TODO: It should be probably moved somewhere else
 export const Configurations: ConfigurationsType = {
-    startDate: '2025-01-01T06:00:00Z',
+    startDate: '2025-01-01T06:06:00Z',
     realMillisecondsPerHour: 10000
 }
 

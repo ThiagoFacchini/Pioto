@@ -14,7 +14,7 @@ export default function Camera( { targetRef } : PropsType ) {
     const [ distance, setDistance ] = useState( 10 )
     const [ theta, setTheta ] = useState( 0 )
 
-    const fixedPhi = Math.PI / 4 
+    const fixedPhi = Math.PI / 3 
     const minDistance = 5
     const maxDistance = 15
 

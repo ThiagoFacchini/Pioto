@@ -2,12 +2,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // [ CORE IMPORTS ]
 // ─────────────────────────────────────────────────────────────────────────────
-import { useEffect, useRef, Suspense } from "react"
+import { useEffect, useRef, useMemo, Suspense } from "react"
 import { useNavigate  } from "react-router-dom"
-import { Canvas } from '@react-three/fiber'
-import { KeyboardControls, OrbitControls } from '@react-three/drei'
+import { Canvas} from '@react-three/fiber'
+import { useGLTF, KeyboardControls, OrbitControls } from '@react-three/drei'
 import { Physics, RigidBody } from '@react-three/rapier'
-import * as THREE from 'three'
+import { clone } from 'three/examples/jsm/utils/SkeletonUtils'
 import type { RapierRigidBody } from '@react-three/rapier'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -27,6 +27,9 @@ import Camera from '../../components/3D/Camera'
 import PlayerCharacter from '../../components/3D/PlayerCharacter'
 import Characters from '../../components/3D/Characters'
 import Resources from '../../components/3D/Resources'
+import WaterBody from "../../components/3D/Water"
+
+import Tree from '../../resources/Tree'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // [ UI COMPONENTS ]
@@ -56,11 +59,28 @@ function Map() {
     const shouldShowCollions = useDebugStore( ( state ) => state.showCollisions )
 
     const controls = useConfigsStore( ( state ) => state.controls )
+    const serverAddress = useConfigsStore( ( state ) => state.serverAddress )
 
     const clearPlayerStore = usePlayersStore( ( state ) => state.clearStore  )
 
     // Internal References
     const playerRef = useRef<RapierRigidBody>(null)
+
+
+
+    // Load terrain oly after player data is available
+    // TODO - There's no server port stored for loading assets, props.port maps back to the socket
+    // port which is currently 8080
+    let gltf = useGLTF(`http://${ serverAddress }:8081/models/MEPPF.glb`)
+    
+    // Clone the scene ( mesh ) to make it safe for use and memoize it since it's very unlikely
+    // to change
+    const clonedTerrain = useMemo(() => {
+        const instance = clone( gltf.scene )
+        instance.position.set( 0, 0, 0 )
+        instance.rotation.set( 0, 0, 0 )
+        return instance
+    }, [gltf.scene] )
 
 
     /**
@@ -86,7 +106,6 @@ function Map() {
         }, 5000)
 
     }, [] )
-
    
     return (
         <>
@@ -96,17 +115,19 @@ function Map() {
                 <Canvas>
                     <KeyboardControls map={ controls } >
 
-                    <ambientLight intensity={0.5} />
+                    {/* <ambientLight intensity={0.5} />w */}
                     <SunLight />
 
                     <Physics gravity={ [ 0, -9.81, 9 ] } debug={ shouldShowCollions }>
                         <Suspense fallback={ null } >
-                            <RigidBody type="fixed" colliders="trimesh" restitution={ 0.2 } friction={ 1 }>
-                                <mesh rotation={ [-Math.PI / 2, 0, 0] } receiveShadow>
-                                    <planeGeometry args={ [60, 60] } />
-                                    <meshStandardMaterial color="green" />
-                                </mesh>
+
+                            {/* Terrain */}
+                            <RigidBody type="fixed" colliders="trimesh" restitution={ 0.2 } friction={ 1 } position={ [ 0, 0, 0 ] }>
+                                <primitive object={ clonedTerrain } flatShading />
                             </RigidBody>
+
+                            {/* Water */}
+                            <WaterBody width={ 54 } height={ 46 } position={ [ 1, -1, 48 ] } waveStrength={ 0.05 } resolution={ 32 } opacity={ 0.5 } />
 
                             <PlayerCharacter forwardedRef={ playerRef } />
                             <Camera targetRef={ playerRef } />
@@ -114,6 +135,8 @@ function Map() {
                             <Characters />
 
                             <Resources />
+
+                            <Tree />
                             
                         </Suspense>   
                     </Physics>
