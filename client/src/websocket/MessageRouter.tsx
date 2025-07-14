@@ -1,7 +1,7 @@
 import { updateConnectionId, setCharacterList, updateCharacterSelected  } from './../stores/WebsocketStore'
 import { pong } from './LatencyCounter'
 
-import { setPlayerList } from './../stores/PlayersStore'
+import { setPlayerList } from '../stores/PlayersStore'
 import { setResources } from '../stores/ResourcesStore'
 import { setGameTime, setMap, setEnvironment } from '../stores/GameStore'
 import { setConfigurations } from '../stores/ConfigsStore'

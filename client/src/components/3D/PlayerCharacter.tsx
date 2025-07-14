@@ -50,6 +50,12 @@ type GLTFPlayerType = {
     serverPort: number,
     forwardedRef: RefObject<RapierRigidBody | null>
 }
+
+type RenderBoxType = {
+    width: number,
+    depth: number,
+    height: number
+}
 // =============================================================================
 
 
@@ -126,6 +132,43 @@ function requestPlayers() {
         payload: null
     } )
 }
+
+
+/**
+ * Returns the player current renderbox
+ */
+function RenderBox( props: RenderBoxType ) {
+    const height = props.height
+    const halfW = props.width / 2
+    const halfD = props.depth / 2
+    return (
+        <group>
+            {/* Front Wall */}
+            <mesh position={[0, props.height / 2, -halfD]}>
+                <planeGeometry args={[props.width, height]} />
+                <meshBasicMaterial color="lightblue" transparent opacity={0.2} side={THREE.DoubleSide} />
+            </mesh>
+
+            {/* Back Wall */}
+            <mesh position={[0, height / 2, halfD]}>
+                <planeGeometry args={[props.width, height]} />
+                <meshBasicMaterial color="lightblue" transparent opacity={0.2} side={THREE.DoubleSide} />
+            </mesh>
+
+            {/* Left Wall */}
+            <mesh position={[-halfW, height / 2, 0]} rotation={[0, Math.PI / 2, 0]}>
+                <planeGeometry args={[props.depth, height]} />
+                <meshBasicMaterial color="lightblue" transparent opacity={0.2} side={THREE.DoubleSide} />
+            </mesh>
+
+            {/* Right Wall */}
+            <mesh position={[halfW, height / 2, 0]} rotation={[0, Math.PI / 2, 0]}>
+                <planeGeometry args={[props.depth, height]} />
+                <meshBasicMaterial color="lightblue" transparent opacity={0.2} side={THREE.DoubleSide} />
+            </mesh>
+        </group>
+    )
+}
 // =============================================================================
 
 
@@ -164,6 +207,9 @@ export default function PlayerCharacter( props: PlayerCharacterType ) {
  * Component responsible for rendering the PlayerCharacter in the Scene Graph.
  */
 function GLTFPlayer(props: GLTFPlayerType) {
+    // Stores
+    const showRenderBox = useDebugStore( ( state ) => state.showRenderBox )
+
     // Internal References
     const rigidBodyRef = useRef<RapierRigidBody>( null )                                            // Reference to the RigidBody
     const nameTagRef = useRef<THREE.Object3D>( null )                                               // Reference to the character nameTag
@@ -323,6 +369,15 @@ function GLTFPlayer(props: GLTFPlayerType) {
                 >
                     { props.playerData.name ?? 'unknown' }
             </Text>
+
+            {/* Renderbox */}
+            { showRenderBox && 
+                <RenderBox 
+                    width={ props.playerData.renderBox[0] }
+                    depth={ props.playerData.renderBox[0] }
+                    height={ 10 }
+                /> 
+            }
         </RigidBody>
     )
 }

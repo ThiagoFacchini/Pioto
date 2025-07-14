@@ -10,7 +10,6 @@ export interface GameTimeSystemInterface {
 
 export class GameTimeSystem extends EventEmitter {
     private gameDate: Date
-    private hoursPassed: number = 0
     private intervalId: NodeJS.Timeout | null = null
     private realMsPerGameHour: number 
 
@@ -18,6 +17,8 @@ export class GameTimeSystem extends EventEmitter {
         super()
         this.gameDate = config.startDate ? new Date( config.startDate ) : new Date()
         this.realMsPerGameHour = config.realMsPerGameHour ?? 60000
+
+        console.log( 'Game date is: ', this.gameDate )
     }
 
     public start(): void {
@@ -35,14 +36,12 @@ export class GameTimeSystem extends EventEmitter {
 
     private advanceTime(): void {
         this.gameDate.setHours( this.gameDate.getHours() + 1 )
-        this.hoursPassed += 1
         this.emit('tick', this.getCurrentTime() )
     }
 
     public getCurrentTime(): GameTime {
         return {
             date: new Date( this.gameDate ),
-            hoursPassed: this.hoursPassed
         }
     }
 

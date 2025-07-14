@@ -6,7 +6,6 @@ import { ResponseMapDefinitionsPayloadType, ResponseEnviromentPayloadType } from
 
 type GameStoreType = {
     date: Date,
-    hoursPassed: number,
     mapName: string | null,
     mapSize: [ number, number ],
     setDate: ( gameTime: GameTime ) => void,
@@ -15,10 +14,11 @@ type GameStoreType = {
 
 export const useGameStore = create< GameStoreType >( ( set ) => ( {
   date: new Date(Date.UTC(30000, 0, 1, 6, 0, 0)),
-  hoursPassed: 0,
   mapName: null,
   mapSize: [ 100, 100 ],
-  setDate: ( gameTime: GameTime) => { set({ date: new Date( gameTime.date ), hoursPassed: gameTime.hoursPassed }) },
+  setDate: ( gameTime: GameTime) => { 
+    set( { date: new Date( gameTime.date ) } ) 
+  },
   setMap: ( map: MapType ) => set( { mapName: map.name, mapSize: map.size } )
 } ) )
 
@@ -33,5 +33,5 @@ export function setMap( payload: ResponseMapDefinitionsPayloadType ) {
 
 export function setEnvironment( payload: ResponseEnviromentPayloadType ) {
   console.log('res environment ' , payload )
-  useGameStore.getState().setDate ( { date: payload.environment.date, hoursPassed: payload.environment.hoursPassed } )
+  useGameStore.getState().setDate ( { date: payload.environment.date } )
 }

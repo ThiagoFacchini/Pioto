@@ -2,10 +2,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // [ CORE ]
 // ─────────────────────────────────────────────────────────────────────────────
-import { useRef, RefObject, useState } from 'react'
-import { DirectionalLightHelper } from 'three'
+import { useRef, RefObject, useEffect } from 'react'
+import { DirectionalLightHelper, DirectionalLight } from 'three'
 import { useHelper } from '@react-three/drei'
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -13,47 +13,78 @@ import * as THREE from 'three'
 // ─────────────────────────────────────────────────────────────────────────────
 import { useGameStore } from '../../stores/GameStore'
 import { useConfigsStore } from '../..//stores/ConfigsStore'
+import { useDebugStore } from '../../stores/DebugStore'
 // =============================================================================
 
 // 🧩 - COMPONENTS
 export default function SunLight() {
-    const hoursPassed = useGameStore( ( state ) => state.hoursPassed )
-    const realMillisecondsPerHour = useConfigsStore((state) => state.realMillisecondsPerHour)
+    const gameDate = useGameStore( ( state ) => state.date )
+    const realMillisecondsPerHour = useConfigsStore(( state ) => state.realMillisecondsPerHour )
+    const showCollisions = useDebugStore( ( state ) => state.showCollisions )
 
-    const lightRef = useRef<THREE.DirectionalLight>( null )
-    useHelper( lightRef as RefObject<THREE.DirectionalLight>, DirectionalLightHelper, 1, 'hotpink' )
+    const lightRef = useRef< DirectionalLight >( null )
+    const helperRef = useRef< DirectionalLightHelper | null >( null )
+    const scene = useThree( state => state.scene )
 
-    const [smoothedHour, setSmoothedHour ] = useState( hoursPassed )
-
-    // Sun orbit parameters
     const sunRadius = 200
-    const center = new THREE.Vector3( 0, -1, 0 )
+    const center = new THREE.Vector3(0, -1, 0)
 
-     useFrame( ( _, delta ) => {
+    // Store last full hour received from server
+    const lastHourRef = useRef( gameDate.getHours() )
+    const elapsedMsRef = useRef( 0 )
+
+    useEffect( () => {
         if ( !lightRef.current ) return
 
-        //  delta = seconds since last frame
-        const hourDelta = ( delta * 1000 ) / realMillisecondsPerHour
-        setSmoothedHour( ( prev ) => ( prev + hourDelta ) % 24 )
+        if ( showCollisions && !helperRef.current ) {
+            const helper = new DirectionalLightHelper( lightRef.current, 1, 'hotpink' )
+            scene.add( helper )
+            helperRef.current = helper
+        }
 
-        const hourInDay = smoothedHour % 24
+        if ( !showCollisions && helperRef.current ) {
+            scene.remove ( helperRef.current )
+            helperRef.current.dispose()
+            helperRef.current = null
+        }
+    }, [ showCollisions, scene ])
 
-        // Sun position in orbit ( sunrise = east, noon = top, sunset = west )
-        let angle: number
-        let visible: boolean = true
+    useEffect( () => {
+        // On server tick, update hour and reset interpolation
+        const newHour = gameDate.getHours()
+        const lastHour = lastHourRef.current
 
-        if (hourInDay >= 6 && hourInDay <= 18) {
-                // Map 6–18 to 0–π radians (sunrise to sunset)
-                const t = (hourInDay - 6) / 12                      // normalized [0, 1]
-                angle = t * Math.PI
+        if ( newHour !== lastHour ) {
+            lastHourRef.current = newHour
+            elapsedMsRef.current = 0
 
         } else {
-            // Night time: keep sun below
-            const t = hourInDay < 6
-                ? (hourInDay + 6) / 12                          // 0–6 → 6–12 (just for orbit math)
-                : (hourInDay - 18) / 12                         // 18–24 → 0–6
+            elapsedMsRef.current = Math.min( elapsedMsRef.current, realMillisecondsPerHour )
+        }
+    }, [ gameDate ] )
 
-                angle = Math.PI + t * Math.PI                   // π → 2π (sun is behind the map)
+
+    useFrame( ( _, delta ) => {
+        if ( !lightRef.current ) return
+
+        // Advance smooth time
+        elapsedMsRef.current += delta * 1000
+        const progress = Math.min( elapsedMsRef.current / realMillisecondsPerHour, 1 )
+        const smoothHour = ( lastHourRef.current + progress ) % 24
+
+        // Convert to sun angle
+        let angle: number
+        let visible = true
+
+        if ( smoothHour >= 6 && smoothHour <= 18 ) {
+            const t = ( smoothHour - 6 ) / 12
+            angle = t * Math.PI
+
+        } else {
+            const t = smoothHour < 6
+                ? ( smoothHour + 6 ) / 12
+                : ( smoothHour - 18 ) / 12
+            angle = Math.PI + t * Math.PI
             visible = false
         }
 
@@ -61,19 +92,22 @@ export default function SunLight() {
         const y = Math.sin( angle ) * sunRadius
         const z = 0
 
-        lightRef.current.position.set( x ,y ,z )
+        lightRef.current.position.set( x, y, z )
         lightRef.current.lookAt( center )
+        lightRef.current.intensity = visible ? 1 : 0
 
-    } )
-   
-
+        // Updating the helper
+        if ( helperRef.current )  {
+            helperRef.current.update()
+        }
+    })
 
     return (
         <directionalLight
-        ref={ lightRef }
-        position={ [0, sunRadius, 0] }
-        intensity={ 1 }
-        castShadow
+            ref={ lightRef }
+            position={ [ 0, sunRadius, 0 ] }
+            intensity={ 1 }
+            castShadow
         />
     )
 }

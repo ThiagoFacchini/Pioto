@@ -1,8 +1,6 @@
 import { useEffect } from 'react'
 import { useResourcesStore  } from "../../stores/ResourcesStore"
 
-import { LAYER_COLLISION } from '../../views/map/Map'
-
 import { sendRequest } from "../../websocket/WsClient"
 import Rock from '../../resources/Rock'
 

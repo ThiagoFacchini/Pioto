@@ -59,6 +59,7 @@ console.log( 'Time Simulation Started' )
 
 
 subscribeTimeSimulation( 'TICK[index.ts]', ( gameTime: GameTime ) => {
+    console.log( 'ticking... ', gameTime )
     serverBroadcast({
         header: 'RES_TICK',
         payload: gameTime
@@ -68,11 +69,9 @@ subscribeTimeSimulation( 'TICK[index.ts]', ( gameTime: GameTime ) => {
 
 const currentGameTime = getCurrentTime()
 Environment.date = currentGameTime.date
-Environment.hoursPassed = currentGameTime.hoursPassed
 
 subscribeTimeSimulation( '[gameState.ts]',( gameTime: GameTime ) => {
     Environment.date = gameTime.date
-    Environment.hoursPassed = gameTime.hoursPassed
 })
 
 

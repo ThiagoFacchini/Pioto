@@ -32,14 +32,15 @@ export const Resources: Resource[] = [
         },
 ]
 
+
 export const Map: MapType = {
     name: 'Isla de Valtoria',
     size: [ 100, 100 ]
 }
 
+
 export const Environment: EnvinronmentType = {
     date: null,
-    hoursPassed: 0,
     season: null,
     temperature: null,
     isSnowing: false,
@@ -49,7 +50,7 @@ export const Environment: EnvinronmentType = {
 
 // TODO: It should be probably moved somewhere else
 export const Configurations: ConfigurationsType = {
-    startDate: '2025-01-01T06:06:00Z',
-    realMillisecondsPerHour: 10000
+    startDate: '2025-01-01T08:00:00.000Z',
+    realMillisecondsPerHour: 1000
 }
 

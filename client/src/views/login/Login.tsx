@@ -31,7 +31,7 @@ function Login() {
 
 
     const mapName = useGameStore( ( state ) => state.mapName )
-    const currentYear = useGameStore( ( state ) => state.date )
+    const gameDate = useGameStore( ( state ) => state.date )
 
     const [ formState, setFormState ] = useState( '' )
     const [ username, setUsername ] = useState( '' )
@@ -88,11 +88,11 @@ function Login() {
 
     // Wait till Character, Configurations and Map definitions are loaded
     useEffect( () => {
-        if ( isCharacterSelected && realMillisecondsPerHour !== 0 && mapName !== null && currentYear.getFullYear() !== 30000 ) {
+        if ( isCharacterSelected && realMillisecondsPerHour !== 0 && mapName !== null && gameDate.getFullYear() !== 30000 ) {
             navigate( '/map', { replace: true } )
         }
 
-    }, [ isCharacterSelected, realMillisecondsPerHour, mapName, currentYear ] )
+    }, [ isCharacterSelected, realMillisecondsPerHour, mapName, gameDate ] )
 
 
     function tryLogin() {

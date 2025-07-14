@@ -5,7 +5,7 @@
 import { useEffect, useRef, useMemo, Suspense } from "react"
 import { useNavigate  } from "react-router-dom"
 import { Canvas} from '@react-three/fiber'
-import { useGLTF, KeyboardControls, OrbitControls } from '@react-three/drei'
+import { useGLTF, KeyboardControls, OrbitControls, Stars } from '@react-three/drei'
 import { Physics, RigidBody } from '@react-three/rapier'
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils'
 import type { RapierRigidBody } from '@react-three/rapier'
@@ -109,13 +109,14 @@ function Map() {
    
     return (
         <>
-            <div style={{ width: '100vw', height: '100vh' }}>
+            <div style={{ width: '100vw', height: '100vh', backgroundColor: '#000000'}}>
                 <GameClock />
 
                 <Canvas>
                     <KeyboardControls map={ controls } >
 
-                    {/* <ambientLight intensity={0.5} />w */}
+                    <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
+                    <ambientLight intensity={0.5} />w
                     <SunLight />
 
                     <Physics gravity={ [ 0, -9.81, 9 ] } debug={ shouldShowCollions }>
@@ -130,8 +131,8 @@ function Map() {
                             <WaterBody width={ 54 } height={ 46 } position={ [ 1, -1, 48 ] } waveStrength={ 0.05 } resolution={ 32 } opacity={ 0.5 } />
 
                             <PlayerCharacter forwardedRef={ playerRef } />
-                            <Camera targetRef={ playerRef } />
-                            {/* <OrbitControls /> */}
+                            {/* <Camera targetRef={ playerRef } /> */}
+                            <OrbitControls />
                             <Characters />
 
                             <Resources />

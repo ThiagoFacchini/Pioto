@@ -9,6 +9,8 @@ export function requestEnvironment ( request: RequestEnvironmentPayloadType, soc
             environment: Environment
         }
     }
+
+    console.log( 'sending ', Environment )
     
     socket.send( JSON.stringify( response ) )
 }
