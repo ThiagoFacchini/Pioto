@@ -2,7 +2,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // [ CORE ]
 // ─────────────────────────────────────────────────────────────────────────────
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+import classNames from 'classnames'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // [ STORES ]
@@ -12,9 +13,20 @@ import { useConfigsStore } from '../../../stores/ConfigsStore'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // [ ASSETS ]
-// ─────────────────────────────────────────────────────────────────────────────
 // @ts-ignore
 import clockImage from './assets/clock.png'
+// @ts-ignore
+import outterRing from './assets/outterRing.png'
+// @ts-ignore
+import innerRing from './assets/innerRing.png'
+// @ts-ignore
+import lens from './assets/lens.png'
+// @ts-ignore
+import background from './assets/background.png'
+// @ts-ignore
+import seasonHolder from './assets/seasonHolder.png'
+// @ts-ignore
+import dateHolder from './assets/dateHolder.png'
 // @ts-ignore
 import styles from './styles.module.css'
 // =============================================================================
@@ -26,8 +38,9 @@ export default function GameClock() {
     const gameDate = useGameStore( ( state ) => state.date )
     const realMillisecondsPerHour = useConfigsStore( ( state ) => state.realMillisecondsPerHour )
 
-    const rotationRef = useRef( 0 )
-    const prevHours = useRef( gameDate.getHours() )
+    const [rotation, setRotation] = useState(0)
+    const prevHours = useRef(gameDate.getHours())
+    const hasInitiallyRotated = useRef(false)
 
     const rawHour = gameDate.getHours() + 1
 
@@ -61,15 +74,17 @@ export default function GameClock() {
         }
     }
 
+
     useEffect( () => { 
-        rotationRef.current = hoursToDegrees( rawHour )
+        setRotation(hoursToDegrees( rawHour ))
         prevHours.current = rawHour
+        hasInitiallyRotated.current = true
     }, [] )
 
 
     useEffect( () => { 
         const prev = prevHours.current
-        const next = rawHour
+        const next = rawHour 
 
         const prevDeg = hoursToDegrees( prev )
         const nextDeg = hoursToDegrees( next )
@@ -78,21 +93,70 @@ export default function GameClock() {
 
          if ( delta > 0 ) {
             const clockwise = ( nextDeg - prevDeg + 360 ) % 360
-            rotationRef.current += clockwise
+            setRotation( ( prevRotation ) => prevRotation + clockwise )
             prevHours.current = next
         }
-
     }, [ rawHour ] )
 
 
+    function getFormattedDate( date: Date ): string {
+        const day = date.getDate()
+        const month = date.toLocaleDateString( 'en-US', { month: 'short' } )
+        let suffix
+
+        if ( day >= 11 && day <= 13 ) suffix = 'th'
+
+        switch ( day % 10 ) {
+            case 1:
+                suffix = 'st'
+                break
+            case 2:
+                suffix = 'nd'
+                break
+            case 3:
+                suffix = 'rd'
+                break
+            default:
+                suffix = 'th'
+                break
+        }
+
+        return `${ day}${ suffix } - ${ month }`
+    }
+
+
+    if ( !hasInitiallyRotated.current ) return null
+
+    console.log('re rendered')
+
     return (
         <div className={ styles.gameclockContainer }>
+            <div className={ styles.innerRing } >
+                <img src={ innerRing } />
+            </div>
+            <div className={ styles.lens } >
+                <img src={ lens } />
+            </div>
+            
             <div className={ styles.imageContainer }>
                 <img
                     src={ clockImage }
                     className={ styles.withTransition }
                     style={ {
-                        transform: `rotate(${ rotationRef.current + 15 }deg)`,
+                        transform: `rotate(${ rotation }deg)`,
+                        transformOrigin: 'center center',
+                        width: '100%',
+                        display: 'block',
+                        '--clock-transition-duration': `${ realMillisecondsPerHour }ms`,
+                    } as React.CSSProperties }
+                />
+            </div>
+            <div className={ styles.background } >
+                <img 
+                    src={ background } 
+                    className={ styles.withTransition }
+                    style={ { 
+                        transform: `rotate( ${ rotation }deg)`,
                         transformOrigin: 'center center',
                         width: '100%',
                         display: 'block',
@@ -100,9 +164,21 @@ export default function GameClock() {
                     } as React.CSSProperties }
                 />
             </div>
-            <div className={ styles.temporary }>
-                { gameDate.getHours() }
+            <div className={ styles.outterRing } >
+                <img src={ outterRing } />
             </div>
+            <div className={ styles.seasonHolder }>
+                <div className={ styles.content }>
+                    SUMMER - 16°C
+                </div>
+                <img src={ seasonHolder } />
+            </div>
+            <div className={ styles.dateHolder }>
+                <div className={ styles.content } >
+                    { getFormattedDate( gameDate ) }
+                </div>
+                <img src={ dateHolder } />                
+            </div> 
         </div>
     )
 }

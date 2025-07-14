@@ -23,7 +23,6 @@ timeSystem.on( 'tick', ( time: GameTime ) => {
 } )
 
 
-
 export function startTimeSimulation(): void {
     timeSystem.start()
 }

@@ -54,17 +54,19 @@ socketServer.on( 'connection', ( socket ) => {
 
 })
 
+
+
+
+server.listen( HTTP_PORT, () => {
+  console.log( `HTTP Server running at http:L//localhost:${HTTP_PORT}` )
+  console.log( `Models served at http://localhost:${HTTP_PORT}/models` )
+} )
+
+
+// Time System and Subscriptions
+
 startTimeSimulation()
 console.log( 'Time Simulation Started' )
-
-
-subscribeTimeSimulation( 'TICK[index.ts]', ( gameTime: GameTime ) => {
-    console.log( 'ticking... ', gameTime )
-    serverBroadcast({
-        header: 'RES_TICK',
-        payload: gameTime
-    })
-})
 
 
 const currentGameTime = getCurrentTime()
@@ -74,8 +76,10 @@ subscribeTimeSimulation( '[gameState.ts]',( gameTime: GameTime ) => {
     Environment.date = gameTime.date
 })
 
-
-server.listen( HTTP_PORT, () => {
-  console.log( `HTTP Server running at http:L//localhost:${HTTP_PORT}` )
-  console.log( `Models served at http://localhost:${HTTP_PORT}/models` )
-} )
+subscribeTimeSimulation( 'TICK[index.ts]', ( gameTime: GameTime ) => {
+    console.log( 'ticking... ', gameTime.date.toLocaleString() )
+    serverBroadcast({
+        header: 'RES_TICK',
+        payload: gameTime
+    })
+})

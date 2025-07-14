@@ -34,7 +34,22 @@ export default function UIHeader () {
 
     const playerData = usePlayersStore( ( state ) => connectionId ? state.playerList?.find( p => p.connectionId === connectionId ) || null : null )
     
- 
+    const [ shouldShow, setShouldShown ] = useState( false )
+
+    
+    useEffect( () => { 
+        const handleKeyDown = ( e: KeyboardEvent ) => {
+            if (e.key == 'Tab' ) {
+                e.preventDefault()
+                setShouldShown( prev => !prev )
+            }
+        }
+
+        window.addEventListener( 'keydown', handleKeyDown )
+        return () => window.removeEventListener( 'keydown', handleKeyDown )
+     }, [])
+
+
     function getConnectionStatus () {
         if ( isConnected ) {
             return (
@@ -89,8 +104,11 @@ export default function UIHeader () {
         })
     }
 
+    
+    if ( !shouldShow ) return null
 
-     return (
+
+    return (
         <div className={ styles.uiheaderContainer } >
             <div className={ styles.connectionContainer } >
                 { getConnectionStatus() }

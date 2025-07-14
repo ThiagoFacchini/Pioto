@@ -10,7 +10,7 @@ export function requestEnvironment ( request: RequestEnvironmentPayloadType, soc
         }
     }
 
-    console.log( 'sending ', Environment )
+    console.log( 'sending ', Environment.date.toLocaleString() )
     
     socket.send( JSON.stringify( response ) )
 }
