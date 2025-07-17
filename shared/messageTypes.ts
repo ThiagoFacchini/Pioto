@@ -13,8 +13,9 @@ import { Environment } from './environmentType.ts'
 // ==================================================================================================================================
 // COMMON TYPES
 // ==================================================================================================================================
-export interface GameTime {
-    date: Date
+export type TickPayload = {
+    gameTime: Date,
+    lastKnowTick: Date
 }
 // ==================================================================================================================================
 
@@ -80,7 +81,7 @@ export type ResponsePayloadMap = {
     RES_CHARACTER_LIST: ResponseCharacterListPayloadType
     RES_PONG: ResponsePongPayloadType
     RES_MAP_RESOURCES_GET: ResponseMapResourcesGetPayloadType,
-    RES_TICK: GameTime,
+    RES_TICK: TickPayload,
     RES_GAME_CONFIGURATIONS: ResponseGameConfigurationsPayloadType
     RES_MAP_DEFINITIONS: ResponseMapDefinitionsPayloadType,
     RES_ENVIRONMENT: ResponseEnviromentPayloadType

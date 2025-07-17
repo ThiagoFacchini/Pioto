@@ -128,11 +128,11 @@ function Map() {
                             </RigidBody>
 
                             {/* Water */}
-                            <WaterBody width={ 54 } height={ 46 } position={ [ 1, -1, 48 ] } waveStrength={ 0.05 } resolution={ 32 } opacity={ 0.5 } />
+                            <WaterBody width={ 54 } height={ 46 } position={ [ 1, -1, 48 ] } waveStrength={ 1 } resolution={ 32 } opacity={ 0.5 } />
 
                             <PlayerCharacter forwardedRef={ playerRef } />
-                            {/* <Camera targetRef={ playerRef } /> */}
-                            <OrbitControls />
+                            <Camera targetRef={ playerRef } />
+                            {/* <OrbitControls /> */}
                             <Characters />
 
                             <Resources />

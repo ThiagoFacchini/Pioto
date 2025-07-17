@@ -1,6 +1,5 @@
 import { EventEmitter } from 'events'
 
-import { GameTime } from 'shared/messageTypes.ts'
 
 export interface GameTimeSystemInterface {
     startDate?: string | Date
@@ -39,10 +38,8 @@ export class GameTimeSystem extends EventEmitter {
         this.emit('tick', this.getCurrentTime() )
     }
 
-    public getCurrentTime(): GameTime {
-        return {
-            date: new Date( this.gameDate ),
-        }
+    public getCurrentTime() {
+        return new Date( this.gameDate )
     }
 
 }

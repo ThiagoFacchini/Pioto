@@ -16,7 +16,7 @@ import { attachSocketServer, serverBroadcast } from './modules/Broadcast.ts'
 
 // Systems
 import { startTimeSimulation, subscribe as subscribeTimeSimulation, getCurrentTime } from './modules/TimeModule.ts'
-import { GameTime } from './../../shared/messageTypes.ts'
+import { TickPayload } from './../../shared/messageTypes.ts'
 
 
 // Resolve __dirname for ES modules
@@ -70,16 +70,19 @@ console.log( 'Time Simulation Started' )
 
 
 const currentGameTime = getCurrentTime()
-Environment.date = currentGameTime.date
+Environment.date = currentGameTime
 
-subscribeTimeSimulation( '[gameState.ts]',( gameTime: GameTime ) => {
-    Environment.date = gameTime.date
+
+subscribeTimeSimulation( '[gameState.ts]',( tickPayload: any ) => {
+    Environment.date = tickPayload.gameTime
 })
 
-subscribeTimeSimulation( 'TICK[index.ts]', ( gameTime: GameTime ) => {
-    console.log( 'ticking... ', gameTime.date.toLocaleString() )
+subscribeTimeSimulation( 'TICK[index.ts]', ( tickPayload: any ) => {
+
+    console.log( 'ticking... ', tickPayload.gameTime.toLocaleString() )
+  
     serverBroadcast({
         header: 'RES_TICK',
-        payload: gameTime
+        payload: tickPayload
     })
 })
