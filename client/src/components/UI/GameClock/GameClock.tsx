@@ -51,7 +51,9 @@ export default function GameClock() {
 
     const rawHour = gameDate.getHours() + 1
 
-
+    // Memoized calculation of the update interval (remaining time to next tick or full hour).
+    // If not ticked (login, authenticate and with selected character), calculate remaining based 
+    // on delta since last tick. Otherwise, use full realMillisecondsPerHour.
     const clockUpdateInterval = useMemo( () => { 
         if ( !hasTicked ) {
             const delta = Date.now() - lastTickTimeStamp;
@@ -62,6 +64,8 @@ export default function GameClock() {
     }, [ hasTicked, lastTickTimeStamp, realMillisecondsPerHour ] )
 
 
+    // Function to convert an hour (0-23) to rotation degrees (15 degrees per hour, 360/24).
+    // Normalizes input to 0-23 range for wrapping (e.g., midnight).
     const hoursToDegrees =  ( hour: number ) : number => {
         const normalized = (hour % 24 + 24) % 24;
         switch ( normalized ) {
@@ -93,45 +97,46 @@ export default function GameClock() {
         }
     }
 
-    useEffect( () => { 
-        const targetDeg = hoursToDegrees(rawHour);
-        let initialDeg = targetDeg;
 
-        console.log('hasTicked ', hasTicked )
+    // Initial setup effect (runs once on mount): Positions the clock correctly for login or ongoing game.
+    useEffect( () => { 
+        const targetDeg = hoursToDegrees(rawHour);                                      // Target rotation for the end of the current hour.
+        let initialDeg = targetDeg;                                                     // Default to target if not on login.
 
         if ( !hasTicked ) {
-            const delta = Date.now() - lastTickTimeStamp;
-            const remaining = Math.max( 0, realMillisecondsPerHour - delta )
-            const fractionRemaining = remaining / realMillisecondsPerHour
+            const delta = Date.now() - lastTickTimeStamp;                               // Real time elapsed since last tick.
+            const remaining = Math.max( 0, realMillisecondsPerHour - delta )            // Remaining real time to next tick.
+            const fractionRemaining = remaining / realMillisecondsPerHour               // Fraction of hour left (0-1).
 
-            console.log( 'fractionRemaining ', fractionRemaining )
-            initialDeg = targetDeg - ( 15 * fractionRemaining )
-            if (initialDeg < 0) initialDeg += 360
+            initialDeg = targetDeg - ( 15 * fractionRemaining )                         // Backtrack from target by remaining fraction of 15 degrees.
+            if (initialDeg < 0) initialDeg += 360                                       // Normalize if wraps below 0.
 
-            setRotation( initialDeg )
+            setRotation( initialDeg )                                                   // Set to interpolated start position (instant, no transition yet).
 
         } else {
-            setRotation( targetDeg )
+            setRotation( targetDeg )                                                    // If already ticked, snap to target and enable transition.
             setIsTransitionEnabled( true )
         }
 
-        prevHours.current = rawHour
-        hasInitiallyRotated.current = true
+        prevHours.current = rawHour                                                     // Update ref for future tick comparisons.
+        hasInitiallyRotated.current = true                                              // Mark as initialized to allow rendering.
     }, [] );
 
 
-    // Separate effect to trigger animation after initial render
+    // Trigger effect: After initial positioning, enable transition and animate to target.
+    // Runs after the initial render if on login.
     useEffect( () => {
         if ( !hasTicked && !isTransitionEnabled && hasInitiallyRotated.current ) {
             setIsTransitionEnabled( true )
             setTimeout( () => {
-                setRotation( hoursToDegrees( rawHour ) )
-            }, 16 )
+                setRotation( hoursToDegrees( rawHour ) )                                // Update to target, triggering CSS animation over remaining time.
+            }, 16 )                                                                     // 16ms ~1 frame for reliable paint timing.
             
         }
     }, [isTransitionEnabled, hasTicked, rawHour] )
 
 
+    // Tick handling effect: When rawHour changes (on tick), add the delta degrees and animate over full interval.
     useEffect( () => { 
         const prev = prevHours.current
         const next = rawHour 
@@ -149,6 +154,7 @@ export default function GameClock() {
     }, [ rawHour ] );
 
 
+    // Utility function to format the date with suffix (e.g., 17th - Jul).
     function getFormattedDate( date: Date ): string {
         const day = date.getDate()
         const month = date.toLocaleDateString( 'en-US', { month: 'short' } )
@@ -175,7 +181,9 @@ export default function GameClock() {
     }
 
 
+    // Conditional render: Don't render until initialized to avoid flashes.
     if ( !hasInitiallyRotated.current ) return null
+    // Calculate the current transition duration based on state (0ms for instant, or calculated interval).
     const transitionDuration = isTransitionEnabled ? `${clockUpdateInterval}ms` : '0ms';
 
 
