@@ -1,5 +1,5 @@
 export type EnvironmentType = {
-    gameTime: Date,
+    gameTimeStamp: number,
     tickTimeStamp: number,
     season?: string,
     temperature?: number,

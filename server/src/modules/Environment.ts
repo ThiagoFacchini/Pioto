@@ -8,8 +8,6 @@ export function requestEnvironment ( request: RequestEnvironmentPayloadType, soc
         payload: Environment
     }
 
-    console.log( 'sending ', Environment.date.toLocaleString() )
-    
     socket.send( JSON.stringify( response ) )
 }
 

@@ -4,43 +4,62 @@ import { TickPayload } from 'shared/messageTypes'
 import { MapType } from 'shared/mapType'
 import { ResponseMapDefinitionsPayloadType, ResponseEnviromentPayloadType } from 'shared/messageTypes'
 
+import { useWebSocketStore } from './WebsocketStore'
+
+
 type GameStoreType = {
-    gameTime: Date,
+    hasTicked: boolean,
+    gameTimeStamp: number,
     tickTimeStamp: number,
     mapName: string | null,
     mapSize: [ number, number ],
-    setGameTime: ( date: Date ) => void,
+    setHasTicked: ( hasTicked: boolean ) => void,
+    setGameTimeStamp: ( timeStamp: number ) => void,
     setTickTimeStamp: ( timeStamp: number ) => void,
     setMap: ( map: MapType ) => void
 }
 
 export const useGameStore = create< GameStoreType >( ( set ) => ( {
-  gameTime: new Date( Date.UTC( 30000, 0, 1, 6, 0, 0 ) ),
-  tickTimeStamp: 0,
-  mapName: null,
-  mapSize: [ 100, 100 ],
-  setGameTime: ( date: Date ) => { 
-    set( { gameTime: new Date( date ) } ) 
-  },
-  setTickTimeStamp: ( timeStamp: number ) => {
-    set( { tickTimeStamp: timeStamp } )
-  },
-  setMap: ( map: MapType ) => set( { mapName: map.name, mapSize: map.size } )
+    hasTicked: false,
+    gameTimeStamp: 0,
+    tickTimeStamp: 0,
+    mapName: null,
+    mapSize: [ 100, 100 ],
+    setHasTicked: ( hasTicked: boolean ) => {
+        set( { hasTicked: hasTicked } )
+    },
+    setGameTimeStamp: ( timeStamp: number ) => { 
+        set( { gameTimeStamp: timeStamp } ) 
+    },
+    setTickTimeStamp: ( timeStamp: number ) => {
+        set( { tickTimeStamp: timeStamp } )
+    },
+    setMap: ( map: MapType ) => set( { mapName: map.name, mapSize: map.size } )
 } ) )
 
 
 export function setTick( payload: TickPayload ) {
-  useGameStore.getState().setGameTime( payload.gameTime ) 
-  useGameStore.getState().setTickTimeStamp( payload.tickTimeStamp )
+    console.log( 'setTick called' )
+
+    useGameStore.getState().setGameTimeStamp( payload.gameTimeStamp ) 
+    useGameStore.getState().setTickTimeStamp( payload.tickTimeStamp )
+    
+    if ( useWebSocketStore.getState().isCharacterSelected ) {
+        if ( useGameStore.getState().hasTicked === false ) {
+            useGameStore.getState().setHasTicked( true )
+            console.log('hasTicked is now true')
+        }
+    
+    } else {
+        console.log('setTick partially discard as player did pick a character yet.')
+    }
 }
 
 export function setMap( payload: ResponseMapDefinitionsPayloadType ) {
-  useGameStore.getState().setMap( payload.map )
+    useGameStore.getState().setMap( payload.map )
 }
 
 export function setEnvironment( payload: ResponseEnviromentPayloadType ) {
-  console.log('date: ' , payload.gameTime )
-  console.log('lastTick: ' , payload.tickTimeStamp )
-  useGameStore.getState().setGameTime( payload.gameTime  )
-  useGameStore.getState().setTickTimeStamp( payload.tickTimeStamp )
+    useGameStore.getState().setGameTimeStamp( payload.gameTimeStamp  )
+    useGameStore.getState().setTickTimeStamp( payload.tickTimeStamp )
 }

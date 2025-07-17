@@ -2,8 +2,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // [ CORE ]
 // ─────────────────────────────────────────────────────────────────────────────
-import React, { useEffect, useRef, useState } from 'react'
-import classNames from 'classnames'
+import React, { useEffect, useRef, useState, useMemo } from 'react'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // [ STORES ]
@@ -35,17 +34,37 @@ import styles from './styles.module.css'
 
 // 🧩 - COMPONENTS
 export default function GameClock() {
-    const gameDate = useGameStore( ( state ) => state.gameTime )
+    const gameTimeStamp = useGameStore( ( state ) => state.gameTimeStamp )
+    const lastTickTimeStamp = useGameStore( ( state ) => state.tickTimeStamp )
+    const hasTicked = useGameStore( ( state ) => state.hasTicked )
+
     const realMillisecondsPerHour = useConfigsStore( ( state ) => state.realMillisecondsPerHour )
 
+    // Converts gameTimeStamp into a Date Object
+    const gameDate = new Date( gameTimeStamp )
+
     const [rotation, setRotation] = useState(0)
-    const prevHours = useRef(gameDate.getHours())
+    const [isTransitionEnabled, setIsTransitionEnabled] = useState(false)
+
+    const prevHours = useRef(gameDate.getHours() + 1)
     const hasInitiallyRotated = useRef(false)
 
     const rawHour = gameDate.getHours() + 1
 
+
+    const clockUpdateInterval = useMemo( () => { 
+        if ( !hasTicked ) {
+            const delta = Date.now() - lastTickTimeStamp;
+            return Math.max(0, realMillisecondsPerHour - delta);
+        } 
+        return realMillisecondsPerHour;
+
+    }, [ hasTicked, lastTickTimeStamp, realMillisecondsPerHour ] )
+
+
     const hoursToDegrees =  ( hour: number ) : number => {
-        switch ( hour ) {
+        const normalized = (hour % 24 + 24) % 24;
+        switch ( normalized ) {
             case 0: return 0
             case 1: return 15
             case 2: return 30
@@ -74,12 +93,43 @@ export default function GameClock() {
         }
     }
 
-
     useEffect( () => { 
-        setRotation(hoursToDegrees( rawHour ))
+        const targetDeg = hoursToDegrees(rawHour);
+        let initialDeg = targetDeg;
+
+        console.log('hasTicked ', hasTicked )
+
+        if ( !hasTicked ) {
+            const delta = Date.now() - lastTickTimeStamp;
+            const remaining = Math.max( 0, realMillisecondsPerHour - delta )
+            const fractionRemaining = remaining / realMillisecondsPerHour
+
+            console.log( 'fractionRemaining ', fractionRemaining )
+            initialDeg = targetDeg - ( 15 * fractionRemaining )
+            if (initialDeg < 0) initialDeg += 360
+
+            setRotation( initialDeg )
+
+        } else {
+            setRotation( targetDeg )
+            setIsTransitionEnabled( true )
+        }
+
         prevHours.current = rawHour
         hasInitiallyRotated.current = true
-    }, [] )
+    }, [] );
+
+
+    // Separate effect to trigger animation after initial render
+    useEffect( () => {
+        if ( !hasTicked && !isTransitionEnabled && hasInitiallyRotated.current ) {
+            setIsTransitionEnabled( true )
+            setTimeout( () => {
+                setRotation( hoursToDegrees( rawHour ) )
+            }, 16 )
+            
+        }
+    }, [isTransitionEnabled, hasTicked, rawHour] )
 
 
     useEffect( () => { 
@@ -96,7 +146,7 @@ export default function GameClock() {
             setRotation( ( prevRotation ) => prevRotation + clockwise )
             prevHours.current = next
         }
-    }, [ rawHour ] )
+    }, [ rawHour ] );
 
 
     function getFormattedDate( date: Date ): string {
@@ -126,6 +176,8 @@ export default function GameClock() {
 
 
     if ( !hasInitiallyRotated.current ) return null
+    const transitionDuration = isTransitionEnabled ? `${clockUpdateInterval}ms` : '0ms';
+
 
     return (
         <div className={ styles.gameclockContainer }>
@@ -145,7 +197,7 @@ export default function GameClock() {
                         transformOrigin: 'center center',
                         width: '100%',
                         display: 'block',
-                        '--clock-transition-duration': `${ realMillisecondsPerHour }ms`,
+                        '--clock-transition-duration': transitionDuration,
                     } as React.CSSProperties }
                 />
             </div>
@@ -158,7 +210,7 @@ export default function GameClock() {
                         transformOrigin: 'center center',
                         width: '100%',
                         display: 'block',
-                        '--clock-transition-duration': `${ realMillisecondsPerHour }ms`
+                        '--clock-transition-duration': transitionDuration
                     } as React.CSSProperties }
                 />
             </div>

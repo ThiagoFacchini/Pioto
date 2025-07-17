@@ -18,7 +18,7 @@ import { useDebugStore } from '../../stores/DebugStore'
 
 // 🧩 - COMPONENTS
 export default function SunLight() {
-    const gameDate = useGameStore( ( state ) => state.gameTime )
+    const gameTimeStamp = useGameStore( ( state ) => state.gameTimeStamp )
     const realMillisecondsPerHour = useConfigsStore(( state ) => state.realMillisecondsPerHour )
     const showCollisions = useDebugStore( ( state ) => state.showCollisions )
 
@@ -28,6 +28,9 @@ export default function SunLight() {
 
     const sunRadius = 200
     const center = new THREE.Vector3(0, -1, 0)
+
+    // Converts gameTimeStamp into a Date Object
+    const gameDate = new Date( gameTimeStamp )
 
     // Store last full hour received from server
     const lastHourRef = useRef( gameDate.getHours() )

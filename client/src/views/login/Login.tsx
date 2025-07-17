@@ -29,13 +29,13 @@ function Login() {
     const setServerPort = useConfigsStore( ( state ) => state.setServerPort )
     const realMillisecondsPerHour = useConfigsStore( ( state ) => state.realMillisecondsPerHour )
 
-
     const mapName = useGameStore( ( state ) => state.mapName )
-    const gameDate = useGameStore( ( state ) => state.gameTime )
+    const gameTimeStamp = useGameStore( ( state ) => state.gameTimeStamp )
 
     const [ formState, setFormState ] = useState( '' )
     const [ username, setUsername ] = useState( '' )
     const [ password, setPassword ] = useState( '' )
+
 
     // Request Connection ID
     useEffect( () => { 
@@ -88,11 +88,11 @@ function Login() {
 
     // Wait till Character, Configurations and Map definitions are loaded
     useEffect( () => {
-        if ( isCharacterSelected && realMillisecondsPerHour !== 0 && mapName !== null && gameDate.getFullYear() !== 30000 ) {
+        if ( isCharacterSelected && realMillisecondsPerHour !== 0 && mapName !== null && gameTimeStamp !== 0 ) {
             navigate( '/map', { replace: true } )
         }
 
-    }, [ isCharacterSelected, realMillisecondsPerHour, mapName, gameDate ] )
+    }, [ isCharacterSelected, realMillisecondsPerHour, mapName, gameTimeStamp ] )
 
 
     function tryLogin() {

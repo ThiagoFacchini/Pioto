@@ -40,7 +40,7 @@ export const Map: MapType = {
 
 
 export const Environment: EnvinronmentType = {
-    date: null,
+    gameTimeStamp: null,
     tickTimeStamp: null,
     season: null,
     temperature: null,
@@ -52,6 +52,6 @@ export const Environment: EnvinronmentType = {
 // TODO: It should be probably moved somewhere else
 export const Configurations: ConfigurationsType = {
     startDate: '2025-01-01T08:00:00.000Z',
-    realMillisecondsPerHour: 5000
+    realMillisecondsPerHour: 10000
 }
 

@@ -17,7 +17,7 @@ timeSystem.on( 'tick', ( tickPayload: TickPayload ) => {
     for (const [ name, callback ] of subscribers ) {
         try {
             callback( {
-                gameTime: tickPayload.gameTime,
+                gameTimeStamp: tickPayload.gameTimeStamp,
                 tickTimeStamp: tickPayload.tickTimeStamp
             } )
         
@@ -46,8 +46,8 @@ export function unsubscribe( name: string ) {
 }
 
 
-export function getCurrentTime(): Date {
-    return timeSystem.getCurrentTime()
+export function getCurrentTimeStamp(): number {
+    return timeSystem.getCurrentTimeStamp()
 }
 
 

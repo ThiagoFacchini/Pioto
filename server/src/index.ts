@@ -15,7 +15,7 @@ import { receiveRequest } from './modules/MessageRouter.ts'
 import { attachSocketServer, serverBroadcast } from './modules/Broadcast.ts'
 
 // Systems
-import { startTimeSimulation, subscribe as subscribeTimeSimulation, getCurrentTime, getTickTimeStamp } from './modules/TimeModule.ts'
+import { startTimeSimulation, subscribe as subscribeTimeSimulation, getCurrentTimeStamp, getTickTimeStamp } from './modules/TimeModule.ts'
 import { TickPayload } from './../../shared/messageTypes.ts'
 
 
@@ -69,14 +69,14 @@ startTimeSimulation()
 console.log( 'Time Simulation Started' )
 
 //  Populate date and tickTimeStamp as soon as server starts
-Environment.date = getCurrentTime()
+Environment.gameTimeStamp = getCurrentTimeStamp()
 Environment.tickTimeStamp = getTickTimeStamp()
 
 
 // Updates environment on every single tick
 subscribeTimeSimulation( '[gameState.ts]',( tickPayload: TickPayload ) => {
     console.log( 'Tick: ' , tickPayload )
-    Environment.gameTime = tickPayload.gameTime
+    Environment.gameTimeStamp = tickPayload.gameTimeStamp
     Environment.tickTimeStamp = tickPayload.tickTimeStamp
 
 })
