@@ -7,7 +7,8 @@ import { Configurations } from './configurationsType.ts'
 // @ts-ignore
 import { MapType } from './mapType.ts'
 // @ts-ignore
-import { Environment } from './environmentType.ts'
+// @TODO DEFINE TYPE
+import { EnvironmentType } from './environmentType.ts'
 
 
 // ==================================================================================================================================
@@ -15,7 +16,7 @@ import { Environment } from './environmentType.ts'
 // ==================================================================================================================================
 export type TickPayload = {
     gameTime: Date,
-    lastKnowTick: Date
+    tickTimeStamp: number
 }
 // ==================================================================================================================================
 
@@ -72,7 +73,7 @@ export type ResponsePongPayloadType = null
 export type ResponseMapResourcesGetPayloadType = { resources: Array<Resource> }
 export type ResponseGameConfigurationsPayloadType = { configurations: Configurations }
 export type ResponseMapDefinitionsPayloadType = { map: MapType }
-export type ResponseEnviromentPayloadType = { environment: Environment }
+export type ResponseEnviromentPayloadType = EnvironmentType
 
 export type ResponsePayloadMap = {
     RES_CONNECTION_ID: ResponseConnectionIdPayloadType

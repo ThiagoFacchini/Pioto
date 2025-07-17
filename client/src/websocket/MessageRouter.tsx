@@ -3,7 +3,7 @@ import { pong } from './LatencyCounter'
 
 import { setPlayerList } from '../stores/PlayersStore'
 import { setResources } from '../stores/ResourcesStore'
-import { setGameTime, setMap, setEnvironment } from '../stores/GameStore'
+import { setTick, setMap, setEnvironment } from '../stores/GameStore'
 import { setConfigurations } from '../stores/ConfigsStore'
 
 import { ResponseType, ResponsePayloadMap } from './../../../shared/messageTypes.js'
@@ -17,7 +17,7 @@ const responseHandler: { [ K in keyof ResponsePayloadMap ]: ( payload: ResponseP
   RES_CHARACTER_LIST: setCharacterList,
   RES_PONG: pong,
   RES_MAP_RESOURCES_GET: setResources,
-  RES_TICK: setGameTime,
+  RES_TICK: setTick,
   RES_GAME_CONFIGURATIONS: setConfigurations,
   RES_MAP_DEFINITIONS: setMap,
   RES_ENVIRONMENT: setEnvironment

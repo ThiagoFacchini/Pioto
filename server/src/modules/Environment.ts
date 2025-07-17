@@ -5,9 +5,7 @@ import { Environment } from './../gameState.ts'
 export function requestEnvironment ( request: RequestEnvironmentPayloadType, socket: WebSocket, socketServer: WebSocketServer ) {
     const response: ResponseType = {
         header: 'RES_ENVIRONMENT',
-        payload: {
-            environment: Environment
-        }
+        payload: Environment
     }
 
     console.log( 'sending ', Environment.date.toLocaleString() )

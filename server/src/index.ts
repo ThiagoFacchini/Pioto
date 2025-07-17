@@ -15,7 +15,7 @@ import { receiveRequest } from './modules/MessageRouter.ts'
 import { attachSocketServer, serverBroadcast } from './modules/Broadcast.ts'
 
 // Systems
-import { startTimeSimulation, subscribe as subscribeTimeSimulation, getCurrentTime } from './modules/TimeModule.ts'
+import { startTimeSimulation, subscribe as subscribeTimeSimulation, getCurrentTime, getTickTimeStamp } from './modules/TimeModule.ts'
 import { TickPayload } from './../../shared/messageTypes.ts'
 
 
@@ -68,19 +68,21 @@ server.listen( HTTP_PORT, () => {
 startTimeSimulation()
 console.log( 'Time Simulation Started' )
 
+//  Populate date and tickTimeStamp as soon as server starts
+Environment.date = getCurrentTime()
+Environment.tickTimeStamp = getTickTimeStamp()
 
-const currentGameTime = getCurrentTime()
-Environment.date = currentGameTime
 
+// Updates environment on every single tick
+subscribeTimeSimulation( '[gameState.ts]',( tickPayload: TickPayload ) => {
+    console.log( 'Tick: ' , tickPayload )
+    Environment.gameTime = tickPayload.gameTime
+    Environment.tickTimeStamp = tickPayload.tickTimeStamp
 
-subscribeTimeSimulation( '[gameState.ts]',( tickPayload: any ) => {
-    Environment.date = tickPayload.gameTime
 })
 
+// Broadcast tick event to all connected clients
 subscribeTimeSimulation( 'TICK[index.ts]', ( tickPayload: any ) => {
-
-    console.log( 'ticking... ', tickPayload.gameTime.toLocaleString() )
-  
     serverBroadcast({
         header: 'RES_TICK',
         payload: tickPayload

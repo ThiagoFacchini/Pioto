@@ -1,30 +1,37 @@
 import { create } from 'zustand'
 
-import { GameTime } from 'shared/messageTypes'
+import { TickPayload } from 'shared/messageTypes'
 import { MapType } from 'shared/mapType'
 import { ResponseMapDefinitionsPayloadType, ResponseEnviromentPayloadType } from 'shared/messageTypes'
 
 type GameStoreType = {
-    date: Date,
+    gameTime: Date,
+    tickTimeStamp: number,
     mapName: string | null,
     mapSize: [ number, number ],
-    setDate: ( gameTime: GameTime ) => void,
+    setGameTime: ( date: Date ) => void,
+    setTickTimeStamp: ( timeStamp: number ) => void,
     setMap: ( map: MapType ) => void
 }
 
 export const useGameStore = create< GameStoreType >( ( set ) => ( {
-  date: new Date(Date.UTC(30000, 0, 1, 6, 0, 0)),
+  gameTime: new Date( Date.UTC( 30000, 0, 1, 6, 0, 0 ) ),
+  tickTimeStamp: 0,
   mapName: null,
   mapSize: [ 100, 100 ],
-  setDate: ( gameTime: GameTime) => { 
-    set( { date: new Date( gameTime.date ) } ) 
+  setGameTime: ( date: Date ) => { 
+    set( { gameTime: new Date( date ) } ) 
+  },
+  setTickTimeStamp: ( timeStamp: number ) => {
+    set( { tickTimeStamp: timeStamp } )
   },
   setMap: ( map: MapType ) => set( { mapName: map.name, mapSize: map.size } )
 } ) )
 
 
-export function setGameTime( gameTime: GameTime ) {
-  useGameStore.getState().setDate( gameTime ) 
+export function setTick( payload: TickPayload ) {
+  useGameStore.getState().setGameTime( payload.gameTime ) 
+  useGameStore.getState().setTickTimeStamp( payload.tickTimeStamp )
 }
 
 export function setMap( payload: ResponseMapDefinitionsPayloadType ) {
@@ -32,6 +39,8 @@ export function setMap( payload: ResponseMapDefinitionsPayloadType ) {
 }
 
 export function setEnvironment( payload: ResponseEnviromentPayloadType ) {
-  console.log('res environment ' , payload )
-  useGameStore.getState().setDate ( { date: payload.environment.date } )
+  console.log('date: ' , payload.gameTime )
+  console.log('lastTick: ' , payload.tickTimeStamp )
+  useGameStore.getState().setGameTime( payload.gameTime  )
+  useGameStore.getState().setTickTimeStamp( payload.tickTimeStamp )
 }

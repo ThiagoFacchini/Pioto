@@ -41,6 +41,7 @@ export const Map: MapType = {
 
 export const Environment: EnvinronmentType = {
     date: null,
+    tickTimeStamp: null,
     season: null,
     temperature: null,
     isSnowing: false,

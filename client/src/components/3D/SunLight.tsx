@@ -18,7 +18,7 @@ import { useDebugStore } from '../../stores/DebugStore'
 
 // 🧩 - COMPONENTS
 export default function SunLight() {
-    const gameDate = useGameStore( ( state ) => state.date )
+    const gameDate = useGameStore( ( state ) => state.gameTime )
     const realMillisecondsPerHour = useConfigsStore(( state ) => state.realMillisecondsPerHour )
     const showCollisions = useDebugStore( ( state ) => state.showCollisions )
 

@@ -31,7 +31,7 @@ function Login() {
 
 
     const mapName = useGameStore( ( state ) => state.mapName )
-    const gameDate = useGameStore( ( state ) => state.date )
+    const gameDate = useGameStore( ( state ) => state.gameTime )
 
     const [ formState, setFormState ] = useState( '' )
     const [ username, setUsername ] = useState( '' )

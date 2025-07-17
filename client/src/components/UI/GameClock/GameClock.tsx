@@ -35,7 +35,7 @@ import styles from './styles.module.css'
 
 // 🧩 - COMPONENTS
 export default function GameClock() {
-    const gameDate = useGameStore( ( state ) => state.date )
+    const gameDate = useGameStore( ( state ) => state.gameTime )
     const realMillisecondsPerHour = useConfigsStore( ( state ) => state.realMillisecondsPerHour )
 
     const [rotation, setRotation] = useState(0)
@@ -126,8 +126,6 @@ export default function GameClock() {
 
 
     if ( !hasInitiallyRotated.current ) return null
-
-    console.log('re rendered')
 
     return (
         <div className={ styles.gameclockContainer }>
