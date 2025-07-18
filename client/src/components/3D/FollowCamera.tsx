@@ -8,7 +8,7 @@ type PropsType = {
     targetRef: RefObject<RapierRigidBody | null>
 }
 
-export default function Camera( { targetRef } : PropsType ) {
+export default function FollowCamera( { targetRef } : PropsType ) {
     const camRef = useRef<THREE.PerspectiveCamera>( null )
 
     const [ distance, setDistance ] = useState( 10 )

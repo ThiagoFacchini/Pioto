@@ -35,6 +35,8 @@ import styles from './styles.module.css'
 // 🧩 - COMPONENTS
 export default function GameClock() {
     const gameTimeStamp = useGameStore( ( state ) => state.gameTimeStamp )
+    const gameSeason = useGameStore( ( state ) => state.gameSeason )
+    const gameCurrentTemperature = useGameStore( ( state ) => state.gameCurrentTemperature )
     const lastTickTimeStamp = useGameStore( ( state ) => state.tickTimeStamp )
     const hasTicked = useGameStore( ( state ) => state.hasTicked )
 
@@ -227,7 +229,7 @@ export default function GameClock() {
             </div>
             <div className={ styles.seasonHolder }>
                 <div className={ styles.content }>
-                    SUMMER - 16°C
+                    { gameSeason.toUpperCase() } - { gameCurrentTemperature }°C
                 </div>
                 <img src={ seasonHolder } />
             </div>

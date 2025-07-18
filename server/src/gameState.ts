@@ -10,8 +10,11 @@ import type { MapType } from 'shared/mapType.ts'
 import type { EnvinronmentType } from 'shared/environmentType.ts'
 
 
-
+// ======================================================================================
+// GAME STATE
+// ======================================================================================
 export const Players: PlayerType[] = []
+
 
 export const Resources: Resource[] = [
         {
@@ -35,7 +38,7 @@ export const Resources: Resource[] = [
 
 export const Map: MapType = {
     name: 'Isla de Valtoria',
-    size: [ 100, 100 ]
+    size: [ 200, 200 ]
 }
 
 
@@ -49,9 +52,19 @@ export const Environment: EnvinronmentType = {
 }
 
 
+// ======================================================================================
+// CONFIGURATIONS
+// ======================================================================================
+
 // TODO: It should be probably moved somewhere else
 export const Configurations: ConfigurationsType = {
-    startDate: '2025-01-01T08:00:00.000Z',
-    realMillisecondsPerHour: 10000
+    startDate: '2025-01-01T08:00:00.000',
+    realMillisecondsPerHour: 1000,
+    seasonTemperatureRanges: {
+        SUMMER: { min: 26, max: 33 },
+        AUTUMN: { min: 19, max: 26 },
+        WINTER: { min: 15, max: 22 },
+        SPRING: { min: 23, max: 30 }
+    }
 }
 

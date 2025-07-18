@@ -6,21 +6,31 @@
 }
 
 .button {
-    padding: 5px 10px 5px 10px;
     border: 1px solid #333;
     background-color: #FFF;
     color: #333;
     cursor: pointer;
     text-align: center;
 
+    &.xs {
+        font-size: var(--font-size-xs);
+        padding: 2px 7px 2px 7px;
+    }
+
     &.sm {
         font-size: var(--font-size-sm);
         border-radius: var(--border-radius-sm);
+        padding: 5px 10px 5px 10px;
     }
 
     &:hover {
         background-color: #CCC;
         color: #111;
+    }
+
+    &.selected {
+        background-color: #333;
+        color: #FFF;
     }
 }
 
@@ -101,6 +111,7 @@
         }
     }
 }
+
 
 .separator {
     position: relative;

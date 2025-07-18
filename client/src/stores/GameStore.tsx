@@ -2,7 +2,7 @@ import { create } from 'zustand'
 
 import { TickPayload } from 'shared/messageTypes'
 import { MapType } from 'shared/mapType'
-import { ResponseMapDefinitionsPayloadType, ResponseEnviromentPayloadType } from 'shared/messageTypes'
+import { ResponseMapDefinitionsPayloadType, ResponseEnviromentPayloadType , GameSeasonType} from 'shared/messageTypes'
 
 import { useWebSocketStore } from './WebsocketStore'
 
@@ -10,11 +10,15 @@ import { useWebSocketStore } from './WebsocketStore'
 type GameStoreType = {
     hasTicked: boolean,
     gameTimeStamp: number,
+    gameSeason: GameSeasonType,
+    gameCurrentTemperature: number,
     tickTimeStamp: number,
     mapName: string | null,
     mapSize: [ number, number ],
     setHasTicked: ( hasTicked: boolean ) => void,
     setGameTimeStamp: ( timeStamp: number ) => void,
+    setGameSeason: ( season: GameSeasonType ) => void,
+    setGameCurrentTemperature: ( temperature: number ) => void,
     setTickTimeStamp: ( timeStamp: number ) => void,
     setMap: ( map: MapType ) => void
 }
@@ -22,6 +26,8 @@ type GameStoreType = {
 export const useGameStore = create< GameStoreType >( ( set ) => ( {
     hasTicked: false,
     gameTimeStamp: 0,
+    gameSeason: 'WINTER',
+    gameCurrentTemperature: 0,
     tickTimeStamp: 0,
     mapName: null,
     mapSize: [ 100, 100 ],
@@ -30,6 +36,12 @@ export const useGameStore = create< GameStoreType >( ( set ) => ( {
     },
     setGameTimeStamp: ( timeStamp: number ) => { 
         set( { gameTimeStamp: timeStamp } ) 
+    },
+    setGameSeason: ( season: GameSeasonType ) => {
+        set( { gameSeason: season } )
+    },
+    setGameCurrentTemperature: ( temperature: number ) => {
+        set( { gameCurrentTemperature: temperature } )
     },
     setTickTimeStamp: ( timeStamp: number ) => {
         set( { tickTimeStamp: timeStamp } )
@@ -42,6 +54,8 @@ export function setTick( payload: TickPayload ) {
     console.log( 'setTick called' )
 
     useGameStore.getState().setGameTimeStamp( payload.gameTimeStamp ) 
+    useGameStore.getState().setGameSeason ( payload.gameSeason)
+    useGameStore.getState().setGameCurrentTemperature( payload.gameCurrentTemperature )
     useGameStore.getState().setTickTimeStamp( payload.tickTimeStamp )
     
     if ( useWebSocketStore.getState().isCharacterSelected ) {

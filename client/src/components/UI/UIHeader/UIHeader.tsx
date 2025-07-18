@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 
 import classNames from 'classnames'
@@ -24,10 +24,19 @@ export default function UIHeader () {
     const isConnected = useWebSocketStore( ( state ) => state.isConnected )
     const connectionId = useWebSocketStore( ( state ) => state.connectionId )
 
-    const setShowCollisions = useDebugStore( ( state ) => state.setShowCollisions )
     const showCollisions = useDebugStore( ( state ) => state.showCollisions )
-    const setShowRenderBox = useDebugStore( ( state ) => state.setShowRenderBox )
+    const setShowCollisions = useDebugStore( ( state ) => state.setShowCollisions )
     const showRenderBox = useDebugStore( ( state ) => state.showRenderBox )
+    const setShowRenderBox = useDebugStore( ( state ) => state.setShowRenderBox )
+    const showGrid = useDebugStore( ( state ) => state.showGrid )
+    const setShowGrid = useDebugStore( ( state ) => state.setShowGrid )
+    const showAxis = useDebugStore( ( state ) => state.showAxis )
+    const setShowAxis = useDebugStore( ( state ) => state.setShowAxis )
+    const showClimaticZones = useDebugStore( ( state ) => state.showClimaticZones )
+    const setShowClimaticZones = useDebugStore( ( state ) => state.setShowClimaticZones )
+    const camera = useDebugStore( ( state ) => state.cameraType )
+    const setCamera = useDebugStore( ( state ) => state.setCameraType )
+
     const fps = useDebugStore( ( state ) => state.fps )
     const latency = useDebugStore( ( state ) => state.latency )
     const position = useDebugStore( ( state ) => state.position )
@@ -83,6 +92,21 @@ export default function UIHeader () {
 
     function handleRenderBox( event: React.ChangeEvent<HTMLInputElement> ) {
         setShowRenderBox( event.target.checked )
+    }
+
+
+    function handleGrid( event: React.ChangeEvent<HTMLInputElement> ) {
+        setShowGrid( event.target.checked )
+    }
+
+
+    function handleAxis( event: React.ChangeEvent<HTMLInputElement> ) {
+        setShowAxis( event.target.checked )
+    }
+
+
+    function handleClimaticZones( event: React.ChangeEvent<HTMLInputElement> ) {
+        setShowClimaticZones( event.target.checked )
     }
 
 
@@ -170,7 +194,66 @@ export default function UIHeader () {
 
             <div className={ classNames( [ uiStyles.label, uiStyles.xs ] ) }>
                 Player Position: <b>{ position[0] }, { position[1] }, { position[2] }</b>
-            </div>            
+            </div>
+
+            <div className={ uiStyles.separator } />
+
+            <div className={ styles.cameraContainer }>
+                <div className={ classNames( [ uiStyles.label, uiStyles.xs ] ) } >
+                    Camera:
+                </div>
+                <div className={ styles.buttonsContainer }>
+                    <div 
+                        className={ classNames( [ uiStyles.button, uiStyles.xs, camera === 1 && uiStyles.selected ] ) } 
+                        onClick={ () => { setCamera( 1 ) } }
+                    >
+                        1
+                    </div>
+                    <div 
+                        className={ classNames( [ uiStyles.button, uiStyles.xs, camera === 2 && uiStyles.selected ] ) } 
+                        onClick={ () => { setCamera( 2 ) } }
+                    >
+                        2
+                    </div>
+                </div>
+            </div>
+
+            <div className={ uiStyles.separator } />
+
+            <div className={ styles.toggleContainer }>
+                <label className={ uiStyles.switch } >
+                    <input type="checkbox" onChange={ handleGrid } checked={ showGrid }/>
+                    <span className={ uiStyles.slider }></span>
+                </label>
+                <div className={ classNames( [ uiStyles.label, uiStyles.xs ] ) }>
+                    Grid
+                </div>
+            </div>
+
+            <div className={ uiStyles.separator } />
+
+            <div className={ styles.toggleContainer }>
+                <label className={ uiStyles.switch } >
+                    <input type="checkbox" onChange={ handleAxis } checked={ showAxis }/>
+                    <span className={ uiStyles.slider }></span>
+                </label>
+                <div className={ classNames( [ uiStyles.label, uiStyles.xs ] ) }>
+                    Axis
+                </div>
+            </div>
+
+            <div className={ uiStyles.separator } />
+
+            <div className={ styles.toggleContainer }>
+                <label className={ uiStyles.switch } >
+                    <input type="checkbox" onChange={ handleClimaticZones } checked={ showClimaticZones }/>
+                    <span className={ uiStyles.slider }></span>
+                </label>
+                <div className={ classNames( [ uiStyles.label, uiStyles.xs ] ) }>
+                    Climatic Zones
+                </div>
+            </div>
+
         </div>
     )
 }

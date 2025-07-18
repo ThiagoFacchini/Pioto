@@ -74,7 +74,7 @@ Environment.tickTimeStamp = getTickTimeStamp()
 
 
 // Updates environment on every single tick
-subscribeTimeSimulation( '[gameState.ts]',( tickPayload: TickPayload ) => {
+subscribeTimeSimulation( 'TICK', '[Environment]',( tickPayload: TickPayload ) => {
     console.log( 'Tick: ' , tickPayload )
     Environment.gameTimeStamp = tickPayload.gameTimeStamp
     Environment.tickTimeStamp = tickPayload.tickTimeStamp
@@ -82,7 +82,7 @@ subscribeTimeSimulation( '[gameState.ts]',( tickPayload: TickPayload ) => {
 })
 
 // Broadcast tick event to all connected clients
-subscribeTimeSimulation( 'TICK[index.ts]', ( tickPayload: any ) => {
+subscribeTimeSimulation( 'TICK', '[Player BroadCast]', ( tickPayload: any ) => {
     serverBroadcast({
         header: 'RES_TICK',
         payload: tickPayload

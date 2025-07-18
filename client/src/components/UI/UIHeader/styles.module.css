@@ -49,4 +49,18 @@
         align-items: center;
     }
 
+
+    & .cameraContainer {
+        display: flex;
+        flex-direction: row;
+        gap: 5px;
+        align-items: center;
+
+        & .buttonsContainer {
+            display: flex;
+            flex-direction: row;
+            gap: 5px;
+        }
+    }
+
 }

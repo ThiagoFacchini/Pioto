@@ -14,10 +14,57 @@ import { EnvironmentType } from './environmentType.ts'
 // ==================================================================================================================================
 // COMMON TYPES
 // ==================================================================================================================================
+export type GameSeasonType = 'SUMMER' | 'AUTUMUN' | 'WINTER' | 'SPRING'
+
+
+export type TimeEventTypes = 'TICK' | 'DAYCHANGE' | 'SUNRISE' | 'SUNSET' | 'WEEKCHANGE' | 'MONTHCHANGE' | 'YEARCHANGE'
+
 export type TickPayload = {
     gameTimeStamp: number,
+    gameSeason: GameSeasonType,
+    gameCurrentTemperature: number,
     tickTimeStamp: number
 }
+
+export type DayChangePayload = {
+    newDay: Date,
+    gameTimeStamp: number
+}
+
+export type SunsetPayload = {
+    gameTimeStamp: number
+}
+
+export type SunrisePayload = { 
+    gameTimeStamp: number
+}
+
+export type WeekChangePayload = {
+    newWeek: number,
+    gameTimeStamp: number
+}
+
+export type MonthChangePayload = {
+    newMonth: number,
+    gameTimeStamp: number
+}
+
+export type YearChangePayload = {
+    newYear: number,
+    gameTimeStamp: number
+}
+
+export type EventPayloadMap = {
+    TICK: TickPayload,
+    DAYCHANGE: DayChangePayload,
+    SUNSET: SunsetPayload,
+    SUNRISE: SunrisePayload,
+    WEEKCHANGE: WeekChangePayload,
+    MONTHCHANGE: MonthChangePayload,
+    YEARCHANGE: YearChangePayload
+}
+
+export type EventPayloadType = EventPayloadMap[keyof EventPayloadMap]
 // ==================================================================================================================================
 
 
