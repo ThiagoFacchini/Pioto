@@ -3,6 +3,8 @@ import type { KeyboardControlsEntry } from '@react-three/drei'
 
 import { ResponseGameConfigurationsPayloadType } from 'shared/messageTypes'
 
+import { useGameStore  } from './GameStore'
+
 type ConfigsStoreType = {
     serverAddress: string,
     serverPort: number,
@@ -34,5 +36,6 @@ export const useConfigsStore = create<ConfigsStoreType>( ( set ) => ( {
 
 
 export function setConfigurations ( payload: ResponseGameConfigurationsPayloadType ) {
+    useGameStore.getState().setClimaticZonesVariation( payload.configurations.climaticZonesTemperatureVariation )
     useConfigsStore.getState().setRealMillisecondsPerHour( payload.configurations.realMillisecondsPerHour )
 }

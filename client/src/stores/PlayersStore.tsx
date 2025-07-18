@@ -1,30 +1,39 @@
 import { create } from 'zustand'
-import { devtools } from 'zustand/middleware'
 import isEqual from 'lodash/isEqual'
 
 import type { PlayerType } from '../../../shared/playerType'
-import type { ResponsePlayerListGetPayloadType } from '../../../shared/messageTypes'
+import type { ResponsePlayerListGetPayloadType, ClimaticZonesType } from '../../../shared/messageTypes'
 
+
+type PlayerDataType = {
+    currentTemperature: number
+    currentClimaticZone: ClimaticZonesType
+}
 
 type PlayerStoreType = {
+    playerData: PlayerDataType
     playerList: PlayerType[] | null,
     setPlayerList: ( players: PlayerType[] ) => void,
+    setPlayerData: ( playerData: PlayerDataType ) => void
     clearStore: () => void
 }
 
 // @ts-ignore
-export const usePlayersStore = create<PlayerStoreType>( devtools( ( set ) => ( {
-    // player: null,
+export const usePlayersStore = create<PlayerStoreType>( ( set ) => ( {
+    playerData: {
+        currentTemperature: 0,
+        currentClimaticZone: 'TROPICAL'
+    },
     playerList: null,
-    // setPlayer: ( player ) => set( { player: player } ),
     setPlayerList: ( players ) => set( { playerList: players }),
+    setPlayerData: ( playerData: PlayerDataType ) => {
+        console.log( 'playerData ', playerData )
+        set( { playerData: playerData } )
+    },
     clearStore: () => {
-        console.log( "Clearing PlayersStore..." )
-        set({
-            playerList: null
-        })
+        set({ playerList: null })
     }
-} ), { name: 'PlayerStore' } ) )
+} ) )
 
 
 // TO be removed

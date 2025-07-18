@@ -2,7 +2,7 @@ import { create } from 'zustand'
 
 import { TickPayload } from 'shared/messageTypes'
 import { MapType } from 'shared/mapType'
-import { ResponseMapDefinitionsPayloadType, ResponseEnviromentPayloadType , GameSeasonType} from 'shared/messageTypes'
+import { ResponseMapDefinitionsPayloadType, ResponseEnviromentPayloadType , GameSeasonType, ClimaticZonesVariationType } from 'shared/messageTypes'
 
 import { useWebSocketStore } from './WebsocketStore'
 
@@ -12,6 +12,7 @@ type GameStoreType = {
     gameTimeStamp: number,
     gameSeason: GameSeasonType,
     gameCurrentTemperature: number,
+    climaticZonesVariation: ClimaticZonesVariationType,
     tickTimeStamp: number,
     mapName: string | null,
     mapSize: [ number, number ],
@@ -19,6 +20,7 @@ type GameStoreType = {
     setGameTimeStamp: ( timeStamp: number ) => void,
     setGameSeason: ( season: GameSeasonType ) => void,
     setGameCurrentTemperature: ( temperature: number ) => void,
+    setClimaticZonesVariation: ( climaticZones: ClimaticZonesVariationType ) => void,
     setTickTimeStamp: ( timeStamp: number ) => void,
     setMap: ( map: MapType ) => void
 }
@@ -28,6 +30,11 @@ export const useGameStore = create< GameStoreType >( ( set ) => ( {
     gameTimeStamp: 0,
     gameSeason: 'WINTER',
     gameCurrentTemperature: 0,
+    climaticZonesVariation: {
+        POLAR: 0,
+        TEMPERATE: 0,
+        TROPICAL: 0
+    },
     tickTimeStamp: 0,
     mapName: null,
     mapSize: [ 100, 100 ],
@@ -42,6 +49,9 @@ export const useGameStore = create< GameStoreType >( ( set ) => ( {
     },
     setGameCurrentTemperature: ( temperature: number ) => {
         set( { gameCurrentTemperature: temperature } )
+    },
+    setClimaticZonesVariation: ( climaticZones: ClimaticZonesVariationType ) => {
+        set( { climaticZonesVariation: climaticZones } )
     },
     setTickTimeStamp: ( timeStamp: number ) => {
         set( { tickTimeStamp: timeStamp } )

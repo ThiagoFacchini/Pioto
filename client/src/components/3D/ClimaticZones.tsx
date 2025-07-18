@@ -22,9 +22,24 @@ import { useWebSocketStore } from '../../stores/WebsocketStore'
 // ─────────────────────────────────────────────────────────────────────────────
 // [ SHARED TYPES & ENUMS ]
 // ─────────────────────────────────────────────────────────────────────────────
+import { ClimaticZonesType } from 'shared/messageTypes'
 import { PlayerType, AnimationNameType } from './../../../../shared/playerType'
 // =============================================================================
 
+
+
+export function getClimaticZone( coordZ: number, mapSize: [ number, number] ): ClimaticZonesType {
+    const halfDepth = mapSize[1] / 2
+    const absZ = Math.abs( coordZ )
+
+    if ( absZ <= halfDepth * 0.5 ) {               // Central 50% (-25% to 25% of full depth).
+        return 'TROPICAL'
+    } else if ( absZ <= halfDepth * 0.8 ) {         // Next 30% total (-25% to -40%, 25% to 40%).
+        return 'TEMPERATE'
+    } else {                                        // Outer 20% (-40% to -50%, 40% to 50%).
+        return 'POLAR'
+    }    
+}
 
 
 export default function ClimaticZones() {

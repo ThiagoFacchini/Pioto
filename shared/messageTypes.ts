@@ -14,8 +14,13 @@ import { EnvironmentType } from './environmentType.ts'
 // ==================================================================================================================================
 // COMMON TYPES
 // ==================================================================================================================================
-export type GameSeasonType = 'SUMMER' | 'AUTUMUN' | 'WINTER' | 'SPRING'
+export type ClimaticZonesType = 'POLAR' | 'TEMPERATE' | 'TROPICAL'
 
+export type ClimaticZonesVariationType = {
+    [K in ClimaticZonesType ]: number
+}
+
+export type GameSeasonType = 'SUMMER' | 'AUTUMUN' | 'WINTER' | 'SPRING' 
 
 export type TimeEventTypes = 'TICK' | 'DAYCHANGE' | 'SUNRISE' | 'SUNSET' | 'WEEKCHANGE' | 'MONTHCHANGE' | 'YEARCHANGE'
 

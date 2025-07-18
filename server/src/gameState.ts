@@ -65,6 +65,11 @@ export const Configurations: ConfigurationsType = {
         AUTUMN: { min: 19, max: 26 },
         WINTER: { min: 15, max: 22 },
         SPRING: { min: 23, max: 30 }
+    },
+    climaticZonesTemperatureVariation: {
+        POLAR: -15,
+        TEMPERATE: -7,
+        TROPICAL: 0
     }
 }
 

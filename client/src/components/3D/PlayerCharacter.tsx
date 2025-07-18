@@ -14,6 +14,7 @@ import type { RapierRigidBody } from '@react-three/rapier'
 // [ STORES ]
 // ─────────────────────────────────────────────────────────────────────────────
 import { useDebugStore } from '../../stores/DebugStore'
+import { useGameStore } from '../../stores/GameStore'
 import { useConfigsStore } from '../../stores/ConfigsStore'
 import { usePlayersStore } from '../../stores/PlayersStore'
 import { useWebSocketStore } from '../../stores/WebsocketStore'
@@ -22,6 +23,7 @@ import { useWebSocketStore } from '../../stores/WebsocketStore'
 // [ SERVICES & UTILITIES ]
 // ─────────────────────────────────────────────────────────────────────────────
 import { sendRequest } from "../../websocket/WsClient"
+import { getClimaticZone } from './ClimaticZones'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // [ SHARED TYPES & ENUMS ]
@@ -38,6 +40,7 @@ import { PlayerType, AnimationNameType } from './../../../../shared/playerType'
 const UPDATE_RATE = 50                                                              // Defines how often it sends updates to the server
 const MIN_UPDATE_DISTANCE = 1                                                       // Defines how much the Player has to move for the resouces to be requested
 const LAST_RESOURCE_REQUEST_POSITION = new THREE.Vector3( Infinity )                // Stores in which position the player was when the last request for resources was made
+const LAST_CLIMATIC_ZONE_REQUEST_POSITION = new THREE.Vector3( Infinity )           // Stores in which position the player was when the last climatic zone check happend
 type ControlKeys = 'forward' | 'backward' | 'left' | 'right' | 'jump'               // Defines which keys will have a rection on this entity
 
 type PlayerCharacterType = {
@@ -168,6 +171,30 @@ function RenderBox( props: RenderBoxType ) {
             </mesh>
         </group>
     )
+}
+
+
+/**
+ * Gets the player climaticZone and store it on PlayersStore
+ */
+function updateClimaticZone( playerPosition: THREE.Vector3 ) {
+    const mapSize = useGameStore.getState().mapSize
+    const climaticZones = useGameStore.getState().climaticZonesVariation
+    const currentTemperature = useGameStore.getState().gameCurrentTemperature
+
+    const playerData = usePlayersStore.getState().playerData
+    const setPlayerData = usePlayersStore.getState().setPlayerData
+
+    if ( playerPosition.distanceTo( LAST_CLIMATIC_ZONE_REQUEST_POSITION ) >= MIN_UPDATE_DISTANCE ) {
+        LAST_CLIMATIC_ZONE_REQUEST_POSITION.copy( playerPosition )
+
+        const currentClimaticZone = getClimaticZone( playerPosition.z, mapSize )
+        const bodyTemperature = currentTemperature + climaticZones[ currentClimaticZone ]
+        
+        const newPlayerData = { ...playerData, ...{ currentTemperature: bodyTemperature, currentClimaticZone: currentClimaticZone } }
+        setPlayerData( newPlayerData )
+    }
+
 }
 // =============================================================================
 
@@ -327,6 +354,8 @@ function GLTFPlayer(props: GLTFPlayerType) {
             requestResources( new THREE.Vector3( bodyPosition.x, bodyPosition.y, bodyPosition.z ) )
 
             requestPlayers()
+
+            updateClimaticZone( new THREE.Vector3(bodyPosition.x, bodyPosition.y, bodyPosition.z) )
         }
 
 
